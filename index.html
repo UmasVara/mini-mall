@@ -45,7 +45,7 @@ button.pay{width:100%;padding:13px;border:0;border-radius:10px;font-weight:800;m
 <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
 <div class="cats"><button class="active" onclick="filterCat('All',this)">All</button><button onclick="filterCat('Vegetables',this)">Vegetables</button><button onclick="filterCat('Grocery',this)">Grocery</button><button onclick="filterCat('Milk & Products',this)">Milk & Products</button><button onclick="filterCat('Others',this)">Others</button></div>
 <div id="ordersBox" style="background:#fff;margin:10px;border-radius:12px;padding:12px;display:none"><h3>My Orders</h3><div id="ordersList"></div></div>
-<div id="grid" class="grid"><div style="padding:20px;color:#888">Loading products from cloud...</div></div>
+<div id="grid" class="grid"><div style="padding:20px;color:#888">Loading...</div></div>
 <div id="modal" class="modal" onclick="if(event.target.id==='modal')closeModal()"><div class="box"><img id="mImg" class="m-img"><div style="padding:12px"><h3 id="mName"></h3><div><span class="mrp" id="mPrice"></span> <span class="qty" id="mQty"></span></div><button class="pay" style="background:#0b7a3e;color:#fff" onclick="addToCartCurrent()">Add to Cart</button><button class="pay" style="background:#111;color:#fff" onclick="buyNowCurrent()">Buy Now</button><button onclick="closeModal()" style="width:100%;padding:12px;background:#eee;border:0;border-radius:10px;margin-top:8px">Close</button></div></div></div>
 <div id="cartModal" class="modal" onclick="if(event.target.id==='cartModal')closeCart()"><div class="box" style="padding:12px"><h3>🛒 My Cart (<span id="cartCount2">0</span>)</h3><div id="cartItems"></div><div id="cartTotal" style="font-weight:800;margin-top:10px;border-top:1px solid #eee;padding-top:10px"></div><div id="cartForm"><h4>Delivery Address</h4><input id="cName" placeholder="Name *"><input id="cPhone" placeholder="Phone *"><input id="cPlot" placeholder="Plot No / House No *"><input id="cApt" placeholder="Apartment / Building *"><textarea id="cAddr" placeholder="Street, Area *"></textarea><input id="cPin" placeholder="Pincode Optional"><select id="cPay"><option value="COD">COD</option><option value="UPI">UPI</option><option value="WhatsApp">WhatsApp</option></select><div id="payInfo" style="font-size:12px;background:#f0fdf4;padding:8px;border-radius:8px;margin-top:8px"></div><button class="pay" style="background:#0b7a3e;color:#fff" onclick="placeCartOrder()">Place Order</button></div><button onclick="closeCart()" style="width:100%;padding:12px;background:#eee;border:0;border-radius:10px;margin-top:8px">Continue Shopping</button></div></div>
 
@@ -57,36 +57,43 @@ if(tapCount>=3){tapCount=0; let p=prompt('Admin Password:'); if(p==='admin123') 
 });
 function toggleMenu(){let s=document.getElementById('side'),o=document.getElementById('overlay');if(s.classList.contains('open')){s.classList.remove('open');o.classList.remove('show');}else{s.classList.add('open');o.classList.add('show');}}
 function closeModal(){modal.style.display='none'} function closeCart(){cartModal.style.display='none'}
-function resetShop(){localStorage.clear();location.reload();}
+function resetShop(){if(confirm('Reset shop? This clears all products added from admin')){localStorage.removeItem('mini_mall_products'); location.reload();}}
 
 let settings={upi:"umasvara@upi",wa:"919000000000",delivery:0,cod:true};
-try{let s=JSON.parse(localStorage.getItem('minimall_settings')||'null'); if(s) settings=s;}catch(e){}
+try{let s=JSON.parse(localStorage.getItem('mini_mall_settings')||'null'); if(s) settings=s;}catch(e){}
 
-let products=[];
-let orders=JSON.parse(localStorage.getItem('minimall_orders')||'[]');
-let cart=JSON.parse(localStorage.getItem('minimall_cart')||'[]');
+// --- FIXED - SAME KEY FOR ADMIN AND HOME ---
+let products=JSON.parse(localStorage.getItem('mini_mall_products')||'[]');
+let orders=JSON.parse(localStorage.getItem('mini_mall_orders')||'[]');
+let cart=JSON.parse(localStorage.getItem('mini_mall_cart')||'[]');
 let cur=null,curFilter='All';
 
 async function loadCloudProducts(){
+ // First priority: products added from admin
+ let saved = JSON.parse(localStorage.getItem('mini_mall_products')||'[]');
+ if(saved && saved.length>0){
+   products = saved;
+   render();
+   return;
+ }
+ // Second: try products.json
  try{
   let res = await fetch('./products.json?v='+Date.now());
   if(!res.ok) throw 'no file';
   products = await res.json();
-  localStorage.setItem('minimall_products', JSON.stringify(products));
+  localStorage.setItem('mini_mall_products', JSON.stringify(products));
  }catch(e){
-  let saved=JSON.parse(localStorage.getItem('minimall_products')||'null');
-  if(saved && saved.length>0) products=saved;
-  else products=[
+  products=[
    {id:1,name:'Fresh Tomato',price:30,qty:'1kg',cat:'Vegetables',images:['https://images.unsplash.com/photo-1561136594-7f68413baa99?w=500']},
    {id:2,name:'Potato',price:25,qty:'1kg',cat:'Vegetables',images:['https://images.unsplash.com/photo-1518977676608-bd36c7ff5710?w=500']}
   ];
  }
  render();
 }
-function saveCart(){localStorage.setItem('minimall_cart',JSON.stringify(cart));updateCount();}
+function saveCart(){localStorage.setItem('mini_mall_cart',JSON.stringify(cart));updateCount();}
 function updateCount(){let c=cart.reduce((a,b)=>a+b.qnty,0);let e=document.getElementById('cartCount');if(c>0){e.style.display='flex';e.textContent=c;cartCount2.textContent=c;}else{e.style.display='none';cartCount2.textContent='0';}}
 function filterCat(c,btn){curFilter=c;document.querySelectorAll('.cats button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');render();}
-function render(){let list=curFilter==='All'?products:products.filter(p=>p.cat===curFilter);if(!list.length){grid.innerHTML='<div style="padding:20px;color:#888">No products. Add in admin.html and update products.json</div>';return;}grid.innerHTML=list.map((p,i)=>`<div class="card"><img src="${p.images[0]}" onclick="openP(${products.indexOf(p)})"><div class="info"><div style="font-weight:700;font-size:14px">${p.name}</div><div><span class="mrp">MRP ₹${p.price}</span></div><div class="qty">${p.qty} - ${p.cat}</div><button class="addBtn" onclick="addToCart(${products.indexOf(p)})">Add to Cart</button></div></div>`).join('');}
+function render(){let list=curFilter==='All'?products:products.filter(p=>p.cat===curFilter);if(!list.length){grid.innerHTML='<div style="padding:20px;color:#888">No products. Go to Admin (tap logo 3 times) and Add products.</div>';return;}grid.innerHTML=list.map((p,i)=>`<div class="card"><img src="${p.images[0]}" onclick="openP(${products.indexOf(p)})"><div class="info"><div style="font-weight:700;font-size:14px">${p.name}</div><div><span class="mrp">MRP ₹${p.price}</span></div><div class="qty">${p.qty} - ${p.cat}</div><button class="addBtn" onclick="addToCart(${products.indexOf(p)})">Add to Cart</button></div></div>`).join('');}
 function openP(i){cur=products[i];modal.style.display='flex';mName.textContent=cur.name;mPrice.textContent='MRP ₹'+cur.price;mQty.textContent='/ '+cur.qty;mImg.src=cur.images[0];}
 function addToCart(idx){let p=products[idx];let f=cart.find(x=>x.id===p.id);if(f)f.qnty++;else cart.push({id:p.id,name:p.name,price:p.price,qty:p.qty,image:p.images[0],qnty:1});saveCart();}
 function addToCartCurrent(){addToCart(products.indexOf(cur));closeModal();}
@@ -96,7 +103,7 @@ function renderCart(){if(!cart.length){cartItems.innerHTML='<div style="padding:
 function chg(i,d){cart[i].qnty+=d;if(cart[i].qnty<=0)cart.splice(i,1);saveCart();renderCart();}
 function rem(i){cart.splice(i,1);saveCart();renderCart();}
 function toggleOrders(){ordersBox.style.display=ordersBox.style.display==='none'?'block':'none';}
-function placeCartOrder(){let nm=cName.value.trim(),ph=cPhone.value.trim(),pl=cPlot.value.trim(),ap=cApt.value.trim(),ad=cAddr.value.trim(),pin=cPin.value.trim(),pay=cPay.value;if(!nm||!ph||!pl||!ap||!ad){alert('Fill all');return;}let sub=cart.reduce((a,b)=>a+b.price*b.qnty,0);let del=settings.delivery||0;let o={id:Date.now(),name:cart.map(x=>x.name+' x'+x.qnty).join(', '),price:sub,image:cart[0].image,customer:{name:nm,phone:ph,plot:pl,apt:ap,addr:ad,pin:pin,pay:pay},status:'Placed',date:new Date().toLocaleString(),total:sub+del};orders.unshift(o);localStorage.setItem('minimall_orders',JSON.stringify(orders));cart=[];saveCart();renderCart();closeCart();alert('Order Placed!');}
+function placeCartOrder(){let nm=cName.value.trim(),ph=cPhone.value.trim(),pl=cPlot.value.trim(),ap=cApt.value.trim(),ad=cAddr.value.trim(),pin=cPin.value.trim(),pay=cPay.value;if(!nm||!ph||!pl||!ap||!ad){alert('Fill all');return;}let sub=cart.reduce((a,b)=>a+b.price*b.qnty,0);let del=settings.delivery||0;let o={id:Date.now(),name:cart.map(x=>x.name+' x'+x.qnty).join(', '),price:sub,image:cart[0].image,customer:{name:nm,phone:ph,plot:pl,apt:ap,addr:ad,pin:pin,pay:pay},status:'Placed',date:new Date().toLocaleString(),total:sub+del};orders.unshift(o);localStorage.setItem('mini_mall_orders',JSON.stringify(orders));cart=[];saveCart();renderCart();closeCart();alert('Order Placed!');}
 loadCloudProducts();updateCount();
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}
 </script>
