@@ -1,58 +1,104 @@
 <!DOCTYPE html>
 <html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mini-Mall</title>
 <style>
-body{font-family:system-ui;background:#f5f5f7;margin:0;overflow-x:hidden}
-header{background:#0b7a3e;color:#fff;padding:12px;display:flex;justify-content:space-between;align-items:center;font-weight:800;position:sticky;top:0;z-index:20}
-.left{display:flex;align-items:center;gap:10px}
-.menuBtn{font-size:26px;background:none;border:0;color:#fff}
-.logo{user-select:none;-webkit-user-select:none;cursor:pointer}
-.cartBtn{background:#fff;color:#0b7a3e;padding:7px 16px;border-radius:20px;border:0;font-weight:800;position:relative}
+*{box-sizing:border-box} body{margin:0;font-family:system-ui;background:#f5f5f7;overflow-x:hidden}
+header{background:#0b7a3e;color:#fff;padding:12px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
+.menuBtn{font-size:26px;background:none;border:0;color:#fff;padding:0 8px}
+.logo{font-weight:800;font-size:18px;user-select:none}
+.cartBtn{background:#fff;color:#0b7a3e;padding:7px 16px;border-radius:20px;border:0;font-weight:800;position:relative;z-index:11}
 .count{position:absolute;top:-6px;right:-6px;background:red;color:#fff;border-radius:50%;width:19px;height:19px;font-size:12px;display:flex;align-items:center;justify-content:center}
-.side{position:fixed;top:0;left:0;width:250px;height:100%;background:#fff;z-index:100;transform:translateX(-100%);transition:0.3s;padding:20px;overflow-y:auto}
-.side.open{transform:translateX(0);box-shadow:2px 0 15px rgba(0,0,0,.3)}
-.side a{display:block;padding:13px 0;border-bottom:1px solid #eee;text-decoration:none;color:#111;font-weight:600}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:90}
-.cats{display:flex;gap:8px;overflow:auto;padding:10px;position:sticky;top:56px;background:#f5f5f7;z-index:9}
+.side{position:fixed;top:0;left:0;width:260px;height:100%;background:#fff;z-index:100;transform:translateX(-100%);transition:.3s;padding:20px}
+.side.open{transform:translateX(0)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:90;display:none;pointer-events:none}
+.overlay.show{display:block;pointer-events:auto}
+.cats{display:flex;gap:8px;overflow:auto;padding:10px;background:#f5f5f7;position:sticky;top:52px;z-index:5}
 .cats button{padding:8px 14px;border-radius:20px;border:1px solid #ddd;background:#fff;white-space:nowrap}
 .cats button.active{background:#111;color:#fff}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
-.card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.08);border:1px solid #eee}
-.card img{width:100%;height:150px;object-fit:cover;cursor:pointer}
+.card{background:#fff;border-radius:16px;overflow:hidden;border:1px solid #eee;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.card img{width:100%;height:150px;object-fit:cover}
 .info{padding:8px}
-.mrp{color:#0b7a3e;font-weight:800;font-size:15px}
-.qty{color:#666;font-size:11px}
-.addBtn{width:100%;margin-top:7px;padding:9px;background:#0b7a3e;color:#fff;border:0;border-radius:8px;font-weight:800}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:99;padding:16px;overflow:auto}
+.mrp{color:#0b7a3e;font-weight:800}
+.qty{font-size:11px;color:#666}
+.addBtn{width:100%;margin-top:7px;padding:10px;background:#0b7a3e;color:#fff;border:0;border-radius:8px;font-weight:800}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:200;padding:16px}
 .box{background:#fff;border-radius:16px;max-width:440px;width:100%;max-height:95vh;overflow:auto}
 .m-img{width:100%;height:260px;object-fit:contain;background:#f5f5f5}
-input,select,textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-top:8px;box-sizing:border-box}
+input,select,textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-top:8px}
 button.pay{width:100%;padding:13px;border:0;border-radius:10px;font-weight:800;margin-top:8px}
-.status{padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700;color:#fff}
-.st-Placed{background:#f59e0b}.st-Packed{background:#3b82f6}.st-Shipped{background:#8b5cf6}.st-Delivered{background:#10b981}
-.cartItem{display:flex;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #eee}
+.cartItem{display:flex;gap:8px;padding:10px 0;border-bottom:1px solid #eee;align-items:center}
 .qBtn{padding:4px 10px;border:1px solid #ddd;background:#fff;border-radius:6px;font-weight:800}
+.status{padding:3px 8px;border-radius:20px;font-size:11px;color:#fff;font-weight:700}.st-Placed{background:#f59e0b}
 </style></head>
 <body>
 <header>
-<div class="left"><button class="menuBtn" onclick="toggleMenu()">☰</button><span class="logo" id="storeName" onclick="tapLogo()">Mini-Mall</span></div>
+<div style="display:flex;align-items:center;gap:8px"><button class="menuBtn" onclick="toggleMenu()">☰</button><span class="logo" id="storeName">Mini-Mall</span></div>
 <button class="cartBtn" onclick="openCart()">🛒 Cart <span id="cartCount" class="count" style="display:none">0</span></button>
 </header>
 
 <div id="side" class="side">
-<h3 style="margin-top:0">Mini-Mall Menu</h3>
-<a href="#" onclick="toggleMenu();window.scrollTo(0,0)">🏠 Home Shop</a>
-<a href="#" onclick="openCart();toggleMenu()">🛒 My Cart</a>
-<a href="#" onclick="toggleOrders();toggleMenu()">📦 My Orders - Tracking</a>
-<a href="#" onclick="clearCache()">♻️ Clear Cache</a>
-<p style="font-size:11px;color:#888;margin-top:20px">Fresh Vegetables • Grocery<br>Milk & Products • Others</p>
+<h3>Menu</h3>
+<a href="#" onclick="toggleMenu();location.reload()" style="display:block;padding:12px 0;border-bottom:1px solid #eee;text-decoration:none;color:#111;font-weight:600">🏠 Home</a>
+<a href="#" onclick="openCart();toggleMenu()" style="display:block;padding:12px 0;border-bottom:1px solid #eee;text-decoration:none;color:#111;font-weight:600">🛒 My Cart</a>
+<a href="#" onclick="toggleOrders();toggleMenu()" style="display:block;padding:12px 0;border-bottom:1px solid #eee;text-decoration:none;color:#111;font-weight:600">📦 My Orders</a>
+<a href="#" onclick="resetShop()" style="display:block;padding:12px 0;text-decoration:none;color:red;font-weight:600">♻️ Fix - Reset Shop</a>
+<p style="font-size:11px;color:#888;margin-top:15px">Tip: Tap 3 times fast on Mini-Mall name for Admin</p>
 </div>
 <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
 
 <div class="cats"><button class="active" onclick="filterCat('All',this)">All</button><button onclick="filterCat('Vegetables',this)">Vegetables</button><button onclick="filterCat('Grocery',this)">Grocery</button><button onclick="filterCat('Milk & Products',this)">Milk & Products</button><button onclick="filterCat('Others',this)">Others</button></div>
 
-<div id="ordersBox" style="background:#fff;margin:10px;border-radius:12px;padding:12px;display:none"><h3 style="margin:0 0 8px">My Orders - Tracking</h3><div id="ordersList"></div></div>
+<div id="ordersBox" style="background:#fff;margin:10px;border-radius:12px;padding:12px;display:none"><h3>My Orders</h3><div id="ordersList"></div></div>
 <div id="grid" class="grid"></div>
 
-<div id="modal" class="modal" onclick="if(event.target.id==='modal')modal.style.display='none'"><div class="box"><img id="mImg" class="m-img"><div style="padding:12px"><h3 id="mName" style="margin:0"></h3><div><span class="mrp" id="mPrice"></span> <span class="qty" id="mQty"></span></div><div id="mCat" style="font-size:11px;color:#666"></div><button class="pay" style="background:#0b7a3e;color:#fff" onclick="addToCartCurrent()">Add to Cart</button><button class="pay" style="background:#111;color:#fff" onclick="buyNowCurrent()">Buy Now</button><button onclick="modal.style.display='none'" style="width:100%;padding:12px;background:#eee;border:0;border-radius:10px;margin-top:8px">Close</button></div></div></div>
+<div id="modal" class="modal" onclick="if(event.target.id==='modal')closeModal()"><div class="box"><img id="mImg" class="m-img"><div style="padding:12px"><h3 id="mName"></h3><div><span class="mrp" id="mPrice"></span> <span class="qty" id="mQty"></span></div><button class="pay" style="background:#0b7a3e;color:#fff" onclick="addToCartCurrent()">Add to Cart</button><button class="pay" style="background:#111;color:#fff" onclick="buyNowCurrent()">Buy Now</button><button onclick="closeModal()" style="width:100%;padding:12px;background:#eee;border:0;border-radius:10px;margin-top:8px">Close</button></div></div></div>
 
-<div id="cartModal" class="modal" onclick="if(event.target.id==='cartModal')cartModal.style.display='none'"><div class="box" style="padding:12px"><h3 style="margin:0 0 10px">🛒 My Cart (<span id="cartCount2">0</span>)</h3><div id="cartItems"></div><div id="cartTotal" style="font-weight:800;font-size:18px;margin-top:10px;border-top:1px solid #eee;padding-top:10px"></div><div id="cartForm" style="margin-top:12px;border-top:1px solid #eee;padding-top:10px"><h4 style="margin:8px 0">Delivery Address</h4><input id="cName" placeholder="Your Name *"><input id="cPhone" placeholder="Phone *"><input id="cPlot" placeholder="Plot No. / House No. *"><input id="cApt" placeholder="Apartment / Building Name *"><textarea id="cAddr" placeholder="Street, Area, Landmark *" rows="2"></textarea><input id="cPin" placeholder="Pincode (Optional)"><select id="cPay"><option value="COD">Cash on Delivery</option><option value="UPI">UPI Payment</option><option value="WhatsApp">WhatsApp Order</option></select><div id="payInfo" style="font-size:12px;background:#f0fdf4;padding:8px;border-radius:8px;margin-top:8px"></div><button class="
+<div id="cartModal" class="modal" onclick="if(event.target.id==='cartModal')closeCart()"><div class="box" style="padding:12px"><h3>🛒 My Cart (<span id="cartCount2">0</span>)</h3><div id="cartItems"></div><div id="cartTotal" style="font-weight:800;margin-top:10px;border-top:1px solid #eee;padding-top:10px"></div><div id="cartForm"><h4>Delivery Address</h4><input id="cName" placeholder="Name *"><input id="cPhone" placeholder="Phone *"><input id="cPlot" placeholder="Plot No / House No *"><input id="cApt" placeholder="Apartment / Building *"><textarea id="cAddr" placeholder="Street, Area *"></textarea><input id="cPin" placeholder="Pincode Optional"><select id="cPay"><option value="COD">COD</option><option value="UPI">UPI</option><option value="WhatsApp">WhatsApp</option></select><div id="payInfo" style="font-size:12px;background:#f0fdf4;padding:8px;border-radius:8px;margin-top:8px"></div><button class="pay" style="background:#0b7a3e;color:#fff" onclick="placeCartOrder()">Place Order</button></div><button onclick="closeCart()" style="width:100%;padding:12px;background:#eee;border:0;border-radius:10px;margin-top:8px">Continue Shopping</button></div></div>
+
+<script>
+// FIXED CLICKABLE + SECRET ADMIN (3 taps)
+let tapCount=0,lastTap=0;
+document.getElementById('storeName').addEventListener('click',()=>{
+let now=Date.now(); if(now-lastTap>2000) tapCount=0; tapCount++; lastTap=now;
+if(tapCount>=3){tapCount=0; let p=prompt('Admin Password:'); if(p==='admin123') location.href='admin.html'; else if(p) alert('Wrong');}
+});
+
+function toggleMenu(){let s=document.getElementById('side'),o=document.getElementById('overlay');if(s.classList.contains('open')){s.classList.remove('open');o.classList.remove('show');}else{s.classList.add('open');o.classList.add('show');}}
+function closeModal(){modal.style.display='none'} function closeCart(){cartModal.style.display='none'}
+function resetShop(){localStorage.clear();location.reload();}
+
+let settings={upi:"umasvara@upi",wa:"919000000000",delivery:0,cod:true};
+try{let s=JSON.parse(localStorage.getItem('minimall_settings')||'null'); if(s) settings=s;}catch(e){}
+
+let products=[
+{id:1,name:'Fresh Tomato',price:30,qty:'1kg',cat:'Vegetables',images:['https://images.unsplash.com/photo-1582284540020-8acbe03f4924?w=500']},
+{id:2,name:'Potato',price:25,qty:'1kg',cat:'Vegetables',images:['https://images.unsplash.com/photo-1518977676608-bd36c7a4f90f?w=500']},
+{id:3,name:'Onion',price:20,qty:'1kg',cat:'Vegetables',images:['https://images.unsplash.com/photo-1508747703725-719777637510?w=500']},
+{id:4,name:'Pure Milk',price:32,qty:'1 Litre',cat:'Milk & Products',images:['https://images.unsplash.com/photo-1550583724-b2692b85b150?w=500']},
+{id:5,name:'Atta',price:180,qty:'5kg',cat:'Grocery',images:['https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=500']},
+{id:6,name:'Curd',price:40,qty:'500 Grams',cat:'Milk & Products',images:['https://images.unsplash.com/photo-1584278860047-22db9ff82bed?w=500']}
+];
+let saved=JSON.parse(localStorage.getItem('minimall_products')||'null');
+if(saved && Array.isArray(saved) && saved.length>0){products=saved;}
+
+let orders=JSON.parse(localStorage.getItem('minimall_orders')||'[]');
+let cart=JSON.parse(localStorage.getItem('minimall_cart')||'[]');
+let cur=null,curFilter='All';
+
+function saveCart(){localStorage.setItem('minimall_cart',JSON.stringify(cart));updateCount();}
+function updateCount(){let c=cart.reduce((a,b)=>a+b.qnty,0);let e=document.getElementById('cartCount');if(c>0){e.style.display='flex';e.textContent=c;cartCount2.textContent=c;}else{e.style.display='none';cartCount2.textContent='0';}}
+function filterCat(c,btn){curFilter=c;document.querySelectorAll('.cats button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');render();}
+function render(){let list=curFilter==='All'?products:products.filter(p=>p.cat===curFilter);grid.innerHTML=list.map((p,i)=>`<div class="card"><img src="${p.images[0]}" onclick="openP(${products.indexOf(p)})"><div class="info"><div style="font-weight:700;font-size:14px">${p.name}</div><div><span class="mrp">MRP ₹${p.price}</span></div><div class="qty">${p.qty} - ${p.cat}</div><button class="addBtn" onclick="addToCart(${products.indexOf(p)})">Add to Cart</button></div></div>`).join('');}
+function openP(i){cur=products[i];modal.style.display='flex';mName.textContent=cur.name;mPrice.textContent='MRP ₹'+cur.price;mQty.textContent='/ '+cur.qty;mImg.src=cur.images[0];}
+function addToCart(idx){let p=products[idx];let f=cart.find(x=>x.id===p.id);if(f)f.qnty++;else cart.push({id:p.id,name:p.name,price:p.price,qty:p.qty,image:p.images[0],qnty:1});saveCart();}
+function addToCartCurrent(){addToCart(products.indexOf(cur));closeModal();}
+function buyNowCurrent(){addToCartCurrent();openCart();}
+function openCart(){cartModal.style.display='flex';renderCart();}
+function renderCart(){if(!cart.length){cartItems.innerHTML='<div style="padding:20px;text-align:center;color:#888">Cart empty<br>Add items</div>';cartTotal.textContent='';cartForm.style.display='none';return;}cartForm.style.display='block';cartItems.innerHTML=cart.map((it,i)=>`<div class="cartItem"><img src="${it.image}" style="width:50px;height:50px;border-radius:8px;object-fit:cover"><div style="flex:1"><div style="font-weight:700;font-size:13px">${it.name}</div><div style="font-size:12px">MRP ₹${it.price} / ${it.qty}</div><div><button class="qBtn" onclick="chg(${i},-1)">-</button> <b>${it.qnty}</b> <button class="qBtn" onclick="chg(${i},1)">+</button> <button onclick="rem(${i})" style="background:#fee;border:0;padding:4px 8px;border-radius:6px;margin-left:6px">Remove</button></div></div><div style="font-weight:800">₹${it.price*it.qnty}</div></div>`).join('');let sub=cart.reduce((a,b)=>a+b.price*b.qnty,0);let del=settings.delivery||0;cartTotal.textContent=`Total ₹${sub+del}`;payInfo.textContent=`Delivery ₹${del} | UPI ${settings.upi}`;}
+function chg(i,d){cart[i].qnty+=d;if(cart[i].qnty<=0)cart.splice(i,1);saveCart();renderCart();}
+function rem(i){cart.splice(i,1);saveCart();renderCart();}
+function toggleOrders(){ordersBox.style.display=ordersBox.style.display==='none'?'block':'none';}
+function placeCartOrder(){let nm=cName.value.trim(),ph=cPhone.value.trim(),pl=cPlot.value.trim(),ap=cApt.value.trim(),ad=cAddr.value.trim(),pin=cPin.value.trim(),pay=cPay.value;if(!nm||!ph||!pl||!ap||!ad){alert('Fill Name Phone Plot Apt Address');return;}let sub=cart.reduce((a,b)=>a+b.price*b.qnty,0);let del=settings.delivery||0;let o={id:Date.now(),name:cart.map(x=>x.name+' x'+x.qnty).join(', '),price:sub,image:cart[0].image,customer:{name:nm,phone:ph,plot:pl,apt:ap,addr:ad,pin:pin,pay:pay},status:'Placed',date:new Date().toLocaleString(),total:sub+del};orders.unshift(o);localStorage.setItem('minimall_orders',JSON.stringify(orders));cart=[];saveCart();renderCart();closeCart();alert('Order Placed!');}
+render();updateCount();
+</script>
+</body></html>
