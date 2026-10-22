@@ -8,15 +8,7 @@
   "background_color": "#ffffff",
   "theme_color": "#0b7a3e",
   "icons": [
-    {
-      "src": "umas-india-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "umas-india-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
+    {"src": "umas-india-192.png","sizes": "192x192","type": "image/png"},
+    {"src": "umas-india-512.png","sizes": "512x512","type": "image/png"}
   ]
 }
