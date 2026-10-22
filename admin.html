@@ -1,28 +1,16 @@
 <!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Panel</title>
-<style>body{font-family:system-ui;background:#f5f5f7;margin:0;padding:12px} .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px} .card{background:#fff;border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.08)} input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-bottom:10px;box-sizing:border-box} button.primary{background:#0b7a3e;color:#fff;border:0;padding:14px;width:100%;border-radius:10px;font-weight:800;font-size:15px} button.secondary{background:#111;color:#fff;border:0;padding:6px 12px;border-radius:6px;font-size:12px} .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px} .item{background:#fff;border-radius:12px;padding:8px;border:1px solid #eee} .item img{width:100%;height:110px;object-fit:cover;border-radius:8px} .hidden{display:none}</style></head>
+<style>body{font-family:system-ui;background:#f5f5f7;margin:0;padding:12px}.card{background:#fff;border-radius:16px;padding:14px;margin-bottom:12px}input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-bottom:10px;box-sizing:border-box}button.primary{background:#0b7a3e;color:#fff;border:0;padding:14px;width:100%;border-radius:10px;font-weight:800}button.del{background:#ef4444;color:#fff;border:0;padding:8px;width:100%;border-radius:8px;margin-top:6px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.item{background:#fff;border-radius:12px;padding:8px}.item img{width:100%;height:110px;object-fit:cover;border-radius:8px}</style></head>
 <body>
-<div class="top"><h3 style="margin:0">Admin Panel</h3><button class="secondary" onclick="document.getElementById('setup').classList.toggle('hidden')">⚙️ Settings</button></div>
-
-<div id="setup" class="card hidden">
-<input id="gitToken" type="password" placeholder="GitHub Token"><input id="gitRepo" placeholder="user/repo e.g. umasvara/mini-mall"><button class="secondary" style="width:100%;padding:10px" onclick="saveSetup()">Save</button><div id="setupStatus" style="font-size:12px;color:green;margin-top:6px"></div>
-</div>
-
+<h3>Admin Panel</h3>
 <div class="card">
-<input id="pName" placeholder="Product Name"><input id="pPrice" type="number" placeholder="Price"><input id="pQty" placeholder="Quantity e.g. 1kg"><select id="pCat"><option>Vegetables</option><option>Grocery</option><option>Milk & Products</option><option>Others</option></select><input id="pImg1" placeholder="Image URL"><button class="primary" onclick="saveProduct()">Add Product</button><div id="msg" style="text-align:center;color:#0b7a3e;font-weight:700;margin-top:8px"></div>
+<input id="pName" placeholder="Product Name"><input id="pPrice" type="number" placeholder="Price"><input id="pQty" placeholder="Quantity e.g. 1kg"><select id="pCat"><option>Vegetables</option><option>Grocery</option><option>Milk & Products</option><option>Others</option></select><input id="pImg1" placeholder="Image URL - https://..."><button class="primary" onclick="saveProduct()">Add Product</button><div id="msg" style="text-align:center;color:green;font-weight:700;margin-top:6px"></div>
 </div>
-
-<div style="display:flex;justify-content:space-between;align-items:center"><h4 style="margin:0">Products (<span id="count">0</span>)</h4><button class="secondary" onclick="loadCloud()">Refresh</button></div>
-<div id="list" class="grid" style="margin-top:10px"></div>
-
+<h4>Products (<span id="count">0</span>)</h4><div id="list" class="grid"></div>
 <script>
-let products=[]; let fileSha=null;
-let GH_TOKEN=localStorage.getItem('gh_token')||''; let GH_REPO=localStorage.getItem('gh_repo')||'';
-gitToken.value=GH_TOKEN; gitRepo.value=GH_REPO;
-function saveSetup(){ GH_TOKEN=gitToken.value.trim(); GH_REPO=gitRepo.value.trim(); localStorage.setItem('gh_token',GH_TOKEN); localStorage.setItem('gh_repo',GH_REPO); setupStatus.textContent='Settings saved'; setTimeout(()=>document.getElementById('setup').classList.add('hidden'),1000); loadCloud(); }
-async function loadCloud(){try{let r=await fetch('./products.json?v='+Date.now()); products=await r.json(); if(!Array.isArray(products)) products=[]; if(GH_TOKEN&&GH_REPO){let api=await fetch(`https://api.github.com/repos/${GH_REPO}/contents/products.json`); if(api.ok){let j=await api.json(); fileSha=j.sha;}}}catch(e){products=[]} render();}
-async function pushToGithub(){if(!GH_TOKEN||!GH_REPO){alert('Go to Settings and add GitHub Token');return false}try{let content=btoa(unescape(encodeURIComponent(JSON.stringify(products,null,2)))); let body={message:'Update products',content:content,sha:fileSha}; let res=await fetch(`https://api.github.com/repos/${GH_REPO}/contents/products.json`,{method:'PUT',headers:{'Authorization':'token '+GH_TOKEN,'Content-Type':'application/json'},body:JSON.stringify(body)}); let d=await res.json(); if(d.content){fileSha=d.content.sha; msg.textContent='Live updated'; setTimeout(()=>msg.textContent='',2000); return true} else{alert(d.message);return false}}catch(e){alert(e);return false}}
-async function saveProduct(){let n=pName.value.trim(),pr=parseInt(pPrice.value),qty=pQty.value.trim(),ct=pCat.value,img=pImg1.value.trim(); if(!n||!pr||!qty||!img){alert('Fill all fields');return} products.unshift({id:Date.now(),name:n,price:pr,qty:qty,cat:ct,images:[img]}); ['pName','pPrice','pQty','pImg1'].forEach(id=>document.getElementById(id).value=''); await pushToGithub(); render();}
-async function deleteProduct(id){if(!confirm('Delete this product?')) return; products=products.filter(x=>x.id!==id); await pushToGithub(); render();}
-function render(){count.textContent=products.length; list.innerHTML=products.map(p=>`<div class="item"><img src="${p.images[0]}"><div style="font-weight:700;font-size:13px;margin-top:4px">${p.name}</div><div style="font-size:12px;color:#666">₹${p.price} • ${p.qty}</div><button class="secondary" style="background:#ef4444;margin-top:6px;width:100%" onclick="deleteProduct(${p.id})">Delete</button></div>`).join('');}
-loadCloud();
+let products = JSON.parse(localStorage.getItem('mini_mall_products')||'[]');
+function saveToMemory(){localStorage.setItem('mini_mall_products',JSON.stringify(products)); msg.textContent='Added! Check Home Page'; setTimeout(()=>msg.textContent='',2000); render();}
+function saveProduct(){let n=pName.value.trim(),pr=parseInt(pPrice.value),qty=pQty.value.trim(),ct=pCat.value,img=pImg1.value.trim(); if(!n||!pr||!qty||!img){alert('Fill all');return} products.unshift({id:Date.now(),name:n,price:pr,qty:qty,cat:ct,images:[img]}); ['pName','pPrice','pQty','pImg1'].forEach(id=>document.getElementById(id).value=''); saveToMemory();}
+function deleteProduct(id){if(!confirm('Delete? Home page lo kuda pothundi')) return; products=products.filter(x=>x.id!==id); saveToMemory();}
+function render(){count.textContent=products.length; list.innerHTML=products.map(p=>`<div class="item"><img src="${p.images[0]}"><div style="font-weight:700;font-size:13px;margin-top:4px">${p.name}</div><div style="font-size:12px">₹${p.price} • ${p.qty}</div><button class="del" onclick="deleteProduct(${p.id})">Delete</button></div>`).join('');}
+render();
 </script></body></html>
