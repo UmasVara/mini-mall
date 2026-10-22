@@ -1,45 +1,59 @@
 <!DOCTYPE html>
 <html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mini-Mall Admin</title>
-<style>body{font-family:system-ui;background:#f2f2f7;margin:0;padding:14px}.card{background:#fff;border-radius:16px;padding:16px}input,select{width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;margin-bottom:10px;box-sizing:border-box}button.main{background:#111;color:#fff;border:0;padding:14px;width:100%;border-radius:10px;font-weight:800;font-size:16px}.products{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.p{background:#fff;border-radius:12px;padding:8px}.p img{width:100%;height:140px;object-fit:cover;border-radius:8px}</style></head>
+<style>body{font-family:system-ui;background:#f2f2f7;margin:0;padding:14px}h2{margin:8px 0}.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px}input,select{width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;margin-bottom:10px;box-sizing:border-box}button.main{background:#0b7a3e;color:#fff;border:0;padding:14px;width:100%;border-radius:10px;font-weight:800;font-size:16px}button.small{border:0;padding:6px 10px;border-radius:6px;color:#fff}.products{display:grid;grid-template-columns:1fr 1fr;gap:10px}.p{background:#fff;border-radius:12px;padding:8px}.p img{width:100%;height:120px;object-fit:cover;border-radius:8px}.order{background:#fff;border-radius:12px;padding:10px;margin-bottom:10px;border-left:4px solid #0b7a3e}</style></head>
 <body>
-<h2>Mini-Mall Admin</h2>
+<h2>Mini-Mall Admin - Veg Only</h2>
+
+<div class="card" style="border:2px solid #0b7a3e">
+<h3 style="margin:0 0 10px">Payment Settings</h3>
+<input id="sUpi" placeholder="UPI ID - e.g. umas@upi">
+<input id="sWa" placeholder="WhatsApp Number - e.g. 919876543210">
+<input id="sDelivery" type="number" placeholder="Delivery Charge">
+<select id="sCod"><option value="true">COD Enabled</option><option value="false">COD Disabled</option></select>
+<button class="main" style="background:#111" onclick="saveSettings()">Save Settings</button>
+<div id="sMsg" style="color:green;font-weight:700;text-align:center;margin-top:6px"></div>
+</div>
+
 <div class="card">
-<input id="pName" placeholder="Name - e.g. Potato 1kg">
-<input id="pPrice" type="number" placeholder="Our Price">
-<input id="pMrp" type="number" placeholder="MRP">
-<select id="pCat"><option>Vegetables</option><option>Grocery</option><option>Mens</option><option>Sarees</option><option>Home</option><option>Electronics</option><option>Others</option></select>
-<input id="pImg1" placeholder="Image 1 URL - main">
+<h3 style="margin:0 0 10px">Add Product - MRP + Quantity</h3>
+<input id="pName" placeholder="Name - e.g. Tomato">
+<input id="pPrice" type="number" placeholder="MRP - e.g. 30">
+<input id="pQty" placeholder="Quantity - e.g. 1kg or 500g or 1 Litre">
+<select id="pCat"><option>Vegetables</option><option>Grocery</option><option>Milk & Products</option><option>Others</option></select>
+<input id="pImg1" placeholder="Image 1 URL">
 <input id="pImg2" placeholder="Image 2 URL">
 <input id="pImg3" placeholder="Image 3 URL">
-<input id="pVideo" placeholder="Video YouTube link optional">
-<button type="button" class="main" onclick="saveProduct()">Add to Mini-Mall</button>
+<input id="pVideo" placeholder="YouTube Video Link optional">
+<button type="button" class="main" onclick="saveProduct()">Add to Shop</button>
 <button type="button" id="cancelBtn" style="display:none;width:100%;margin-top:8px;padding:12px;background:#eee;border:0;border-radius:10px" onclick="cancelEdit()">Cancel</button>
 <div id="msg" style="color:green;font-weight:700;margin-top:8px;text-align:center"></div>
 </div>
+
+<div class="card">
+<h3>Customer Orders - Tracking (<span id="oCount">0</span>)</h3>
+<div id="ordersAdmin"></div>
+</div>
+
 <h3>Products (<span id="count">0</span>)</h3>
 <div id="list" class="products"></div>
+
 <script>
-let products=[]; try{products=JSON.parse(localStorage.getItem('minimall_products')||'[]')}catch(e){}
+let products=JSON.parse(localStorage.getItem('minimall_products')||'[]');
+let orders=JSON.parse(localStorage.getItem('minimall_orders')||'[]');
+let settings=JSON.parse(localStorage.getItem('minimall_settings')||'{"upi":"umasvara@upi","wa":"919000000000","delivery":0,"cod":true}');
 let editId=null;
-if(products.length===0){products=[
-{id:1,name:'Fresh Tomato 1kg',price:30,mrp:50,cat:'Vegetables',images:['https://images.unsplash.com/photo-1582284540020-8acbe03f4924?w=500'],video:''},
-{id:2,name:'Mens Casual Shirt',price:600,mrp:2000,cat:'Mens',images:['https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=500'],video:''},
-{id:3,name:'Atta 5kg',price:180,mrp:250,cat:'Grocery',images:['https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=500'],video:''}
-]; localStorage.setItem('minimall_products',JSON.stringify(products));}
-function saveProduct(){
- let n=document.getElementById('pName').value.trim(), pr=document.getElementById('pPrice').value, mr=document.getElementById('pMrp').value, ct=document.getElementById('pCat').value, i1=document.getElementById('pImg1').value.trim(), i2=document.getElementById('pImg2').value.trim(), i3=document.getElementById('pImg3').value.trim(), vd=document.getElementById('pVideo').value.trim();
- if(!n||!pr||!i1){alert('Need Name, Price, Image1');return;}
- let pNum=parseInt(pr), mNum=parseInt(mr||pr);
- if(editId!==null){let idx=products.findIndex(x=>x.id===editId);products[idx]={id:editId,name:n,price:pNum,mrp:mNum,cat:ct,images:[i1,i2,i3].filter(Boolean),video:vd};editId=null;document.querySelector('button.main').textContent='Add to Mini-Mall';document.getElementById('cancelBtn').style.display='none';}
- else{products.unshift({id:Date.now(),name:n,price:pNum,mrp:mNum,cat:ct,images:[i1,i2,i3].filter(Boolean),video:vd});}
- ['pName','pPrice','pMrp','pImg1','pImg2','pImg3','pVideo'].forEach(id=>document.getElementById(id).value='');
- localStorage.setItem('minimall_products',JSON.stringify(products));
- document.getElementById('msg').textContent='Saved!'; setTimeout(()=>document.getElementById('msg').textContent='',2000); render();
-}
-function editProduct(id){let p=products.find(x=>x.id===id);document.getElementById('pName').value=p.name;document.getElementById('pPrice').value=p.price;document.getElementById('pMrp').value=p.mrp;document.getElementById('pCat').value=p.cat;document.getElementById('pImg1').value=p.images[0]||'';document.getElementById('pImg2').value=p.images[1]||'';document.getElementById('pImg3').value=p.images[2]||'';document.getElementById('pVideo').value=p.video||'';editId=id;document.querySelector('button.main').textContent='Update';document.getElementById('cancelBtn').style.display='block';scrollTo(0,0);}
-function cancelEdit(){editId=null;['pName','pPrice','pMrp','pImg1','pImg2','pImg3','pVideo'].forEach(id=>document.getElementById(id).value='');document.querySelector('button.main').textContent='Add to Mini-Mall';document.getElementById('cancelBtn').style.display='none';}
+products=products.filter(p=>!['Mens','Sarees','Home','Electronics'].includes(p.cat));
+function loadSettings(){sUpi.value=settings.upi||'';sWa.value=settings.wa||'';sDelivery.value=settings.delivery||0;sCod.value=(settings.cod?'true':'false');}
+function saveSettings(){settings={upi:sUpi.value.trim(),wa:sWa.value.trim(),delivery:parseInt(sDelivery.value||0),cod:sCod.value==='true'};localStorage.setItem('minimall_settings',JSON.stringify(settings));sMsg.textContent='Settings Saved!';setTimeout(()=>sMsg.textContent='',2000);}
+loadSettings();
+function saveProduct(){let n=pName.value.trim(),pr=pPrice.value,qty=pQty.value.trim(),ct=pCat.value,i1=pImg1.value.trim(),i2=pImg2.value.trim(),i3=pImg3.value.trim(),vd=pVideo.value.trim();if(!n||!pr||!qty||!i1){alert('Need Name, MRP, Quantity, Image1');return;}let pNum=parseInt(pr);if(editId!==null){let idx=products.findIndex(x=>x.id===editId);products[idx]={id:editId,name:n,price:pNum,qty:qty,cat:ct,images:[i1,i2,i3].filter(Boolean),video:vd};editId=null;document.querySelectorAll('button.main')[1].textContent='Add to Shop';cancelBtn.style.display='none';}else{products.unshift({id:Date.now(),name:n,price:pNum,qty:qty,cat:ct,images:[i1,i2,i3].filter(Boolean),video:vd});} ['pName','pPrice','pQty','pImg1','pImg2','pImg3','pVideo'].forEach(id=>document.getElementById(id).value='');localStorage.setItem('minimall_products',JSON.stringify(products));msg.textContent='Saved!';setTimeout(()=>msg.textContent='',2000);render();}
+function editProduct(id){let p=products.find(x=>x.id===id);pName.value=p.name;pPrice.value=p.price;pQty.value=p.qty||p.quantity||'';pCat.value=p.cat;pImg1.value=p.images[0]||'';pImg2.value=p.images[1]||'';pImg3.value=p.images[2]||'';pVideo.value=p.video||'';editId=id;document.querySelectorAll('button.main')[1].textContent='Update';cancelBtn.style.display='block';window.scrollTo(0,200);}
+function cancelEdit(){editId=null;['pName','pPrice','pQty','pImg1','pImg2','pImg3','pVideo'].forEach(id=>document.getElementById(id).value='');document.querySelectorAll('button.main')[1].textContent='Add to Shop';cancelBtn.style.display='none';}
 function deleteProduct(id){if(confirm('Delete?')){products=products.filter(x=>x.id!==id);localStorage.setItem('minimall_products',JSON.stringify(products));render();}}
-function render(){document.getElementById('count').textContent=products.length;document.getElementById('list').innerHTML=products.map(p=>`<div class="p"><img src="${p.images[0]}"><div style="font-weight:700">${p.name}</div><div style="font-size:12px">₹${p.price} <s>₹${p.mrp}</s> - ${p.cat}</div><div style="margin-top:6px"><button onclick="editProduct(${p.id})" style="background:#1a73e8;color:#fff;border:0;padding:6px 10px;border-radius:6px">Edit</button> <button onclick="deleteProduct(${p.id})" style="background:#222;color:#fff;border:0;padding:6px 10px;border-radius:6px">Delete</button></div></div>`).join('');}
-render();
+function updateStatus(id,s){let o=orders.find(x=>x.id===id);o.status=s;localStorage.setItem('minimall_orders',JSON.stringify(orders));renderOrders();}
+function deleteOrder(id){if(confirm('Delete order?')){orders=orders.filter(x=>x.id!==id);localStorage.setItem('minimall_orders',JSON.stringify(orders));renderOrders();}}
+function render(){count.textContent=products.length;list.innerHTML=products.map(p=>`<div class="p"><img src="${p.images[0]}"><div style="font-weight:700;font-size:13px">${p.name}</div><div style="font-size:12px">MRP ₹${p.price} / ${p.qty} - ${p.cat}</div><div style="margin-top:6px"><button class="small" style="background:#1a73e8" onclick="editProduct(${p.id})">Edit</button> <button class="small" style="background:#222" onclick="deleteProduct(${p.id})">Del</button></div></div>`).join('');}
+function renderOrders(){oCount.textContent=orders.length;if(!orders.length){ordersAdmin.innerHTML='<div style="color:#888">No orders</div>';return;}ordersAdmin.innerHTML=orders.map(o=>`<div class="order"><div style="font-weight:800">${o.name} (${o.qty}) - MRP ₹${o.price} Total ₹${o.total}</div><div style="font-size:12px">Customer: ${o.customer.name} | ${o.customer.phone} | ${o.customer.pay}</div><div style="font-size:12px">Plot: ${o.customer.plot}, Apt: ${o.customer.apt}</div><div style="font-size:11px">Addr: ${o.customer.addr} ${o.customer.pin?'- Pin:'+o.customer.pin:''} | ${o.date}</div><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><select onchange="updateStatus(${o.id},this.value)" style="width:auto;padding:6px"><option ${o.status==='Placed'?'selected':''}>Placed</option><option ${o.status==='Packed'?'selected':''}>Packed</option><option ${o.status==='Shipped'?'selected':''}>Shipped</option><option ${o.status==='Delivered'?'selected':''}>Delivered</option></select><button class="small" style="background:#ef4444" onclick="deleteOrder(${o.id})">Delete</button><button class="small" style="background:#25d366" onclick="window.open('https://wa.me/${o.customer.phone}?text=Hi ${o.customer.name}, your order ${o.name} is ${o.status}','_blank')">WhatsApp</button></div></div>`).join('');}
+render();renderOrders();
 </script>
 </body></html>
