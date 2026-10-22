@@ -1,60 +1,66 @@
-<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mini-Mall Admin</title>
-<style>body{font-family:system-ui;background:#f2f2f7;margin:0;padding:14px}h2{margin:8px 0}.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px}input,select{width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;margin-bottom:10px;box-sizing:border-box}button.main{background:#0b7a3e;color:#fff;border:0;padding:14px;width:100%;border-radius:10px;font-weight:800;font-size:16px}button.small{border:0;padding:6px 10px;border-radius:6px;color:#fff}.products{display:grid;grid-template-columns:1fr 1fr;gap:10px}.p{background:#fff;border-radius:12px;padding:8px}.p img{width:100%;height:120px;object-fit:cover;border-radius:8px}.order{background:#fff;border-radius:12px;padding:10px;margin-bottom:10px;border-left:4px solid #0b7a3e}</style></head>
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin - Full Control</title>
+<style>body{font-family:system-ui;background:#f2f2f7;margin:0;padding:12px}.card{background:#fff;border-radius:16px;padding:14px;margin-bottom:12px}input,select{width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;margin-bottom:10px;box-sizing:border-box}button.main{background:#0b7a3e;color:#fff;border:0;padding:14px;width:100%;border-radius:10px;font-weight:800;font-size:16px}button.small{border:0;padding:6px 10px;border-radius:6px;color:#fff;margin-right:4px}.products{display:grid;grid-template-columns:1fr 1fr;gap:10px}.p{background:#fff;border-radius:12px;padding:8px}.p img{width:100%;height:110px;object-fit:cover;border-radius:8px}#setup{background:#fff3cd;border:1px solid #ffecb5;padding:12px;border-radius:12px;margin-bottom:12px}</style></head>
 <body>
-<h2>Mini-Mall Admin - Veg Only</h2>
+<h3 style="margin:0 0 10px 0">Admin - Full App Control</h3>
 
-<div class="card" style="border:2px solid #0b7a3e">
-<h3 style="margin:0 0 10px">Payment Settings</h3>
-<input id="sUpi" placeholder="UPI ID - e.g. umas@upi">
-<input id="sWa" placeholder="WhatsApp Number - e.g. 919876543210">
-<input id="sDelivery" type="number" placeholder="Delivery Charge">
-<select id="sCod"><option value="true">COD Enabled</option><option value="false">COD Disabled</option></select>
-<button class="main" style="background:#111" onclick="saveSettings()">Save Settings</button>
-<div id="sMsg" style="color:green;font-weight:700;text-align:center;margin-top:6px"></div>
+<div id="setup" class="card">
+<b>One Time Setup (30 sec only)</b><br><small>GitHub Token kavali - app lone products.json update cheyyadaniki</small><br>
+<input id="gitToken" placeholder="Paste GitHub Token here - ghp_..."><input id="gitRepo" placeholder="Repo - ex: umasvara/mini-mall"><button onclick="saveSetup()" style="background:#111;color:#fff;border:0;padding:10px;width:100%;border-radius:8px;margin-top:6px">Save Setup</button>
+<div style="font-size:11px;margin-top:8px;color:#666">Token ela techukovali: GitHub → Settings → Developer Settings → Personal Access Tokens → Tokens (classic) → Generate → Tick 'repo' → Generate → Copy paste here</div>
+<div id="setupStatus" style="font-weight:700;color:green;margin-top:6px"></div>
 </div>
 
 <div class="card">
-<h3 style="margin:0 0 10px">Add Product - MRP + Quantity</h3>
-<input id="pName" placeholder="Name - e.g. Tomato">
-<input id="pPrice" type="number" placeholder="MRP - e.g. 30">
-<input id="pQty" placeholder="Quantity - e.g. 1kg or 500g or 1 Litre">
-<select id="pCat"><option>Vegetables</option><option>Grocery</option><option>Milk & Products</option><option>Others</option></select>
-<input id="pImg1" placeholder="Image 1 URL">
-<input id="pImg2" placeholder="Image 2 URL">
-<input id="pImg3" placeholder="Image 3 URL">
-<input id="pVideo" placeholder="YouTube Video Link optional">
-<button type="button" class="main" onclick="saveProduct()">Add to Shop</button>
-<button type="button" id="cancelBtn" style="display:none;width:100%;margin-top:8px;padding:12px;background:#eee;border:0;border-radius:10px" onclick="cancelEdit()">Cancel</button>
-<div id="msg" style="color:green;font-weight:700;margin-top:8px;text-align:center"></div>
+<input id="pName" placeholder="Product Name"><input id="pPrice" type="number" placeholder="Price"><input id="pQty" placeholder="Qty - 1kg"><select id="pCat"><option>Vegetables</option><option>Grocery</option><option>Milk & Products</option><option>Others</option></select>
+<input id="pImg1" placeholder="Image URL"><button class="main" onclick="saveProduct()">Add to Shop - Buyer Site Lo Auto Vastundi</button><div id="msg" style="color:green;font-weight:700;text-align:center;margin-top:8px"></div>
 </div>
 
-<div class="card">
-<h3>Customer Orders - Tracking (<span id="oCount">0</span>) <button onclick="deleteAllOrders()" style="background:#ef4444;color:#fff;border:0;padding:6px 10px;border-radius:6px;float:right">Delete All Orders</button></h3>
-<div id="ordersAdmin"></div>
-</div>
-
-<h3>Products (<span id="count">0</span>) <button onclick="deleteAllProducts()" style="background:#ef4444;color:#fff;border:0;padding:6px 10px;border-radius:6px;margin-left:10px">Delete All</button></h3>
+<div class="card"><h3 style="margin:0">Live Products (<span id="count">0</span>) - Buyer Site lo Ive Kanipistayi <button onclick="loadCloud()" style="background:#ddd;border:0;padding:5px 10px;border-radius:6px;float:right">Refresh</button></h3></div>
 <div id="list" class="products"></div>
 
 <script>
-let products=JSON.parse(localStorage.getItem('minimall_products')||'[]');
-let orders=JSON.parse(localStorage.getItem('minimall_orders')||'[]');
-let settings=JSON.parse(localStorage.getItem('minimall_settings')||'{"upi":"umasvara@upi","wa":"919000000000","delivery":0,"cod":true}');
-let editId=null;
-function loadSettings(){sUpi.value=settings.upi||'';sWa.value=settings.wa||'';sDelivery.value=settings.delivery||0;sCod.value=(settings.cod?'true':'false');}
-function saveSettings(){settings={upi:sUpi.value.trim(),wa:sWa.value.trim(),delivery:parseInt(sDelivery.value||0),cod:sCod.value==='true'};localStorage.setItem('minimall_settings',JSON.stringify(settings));sMsg.textContent='Settings Saved!';setTimeout(()=>sMsg.textContent='',2000);}
-loadSettings();
-function saveProduct(){let n=pName.value.trim(),pr=pPrice.value,qty=pQty.value.trim(),ct=pCat.value,i1=pImg1.value.trim(),i2=pImg2.value.trim(),i3=pImg3.value.trim(),vd=pVideo.value.trim();if(!n||!pr||!qty||!i1){alert('Need Name, MRP, Quantity, Image1');return;}let pNum=parseInt(pr);if(editId!==null){let idx=products.findIndex(x=>x.id===editId);products[idx]={id:editId,name:n,price:pNum,qty:qty,cat:ct,images:[i1,i2,i3].filter(Boolean),video:vd};editId=null;document.querySelectorAll('button.main')[1].textContent='Add to Shop';cancelBtn.style.display='none';}else{products.unshift({id:Date.now(),name:n,price:pNum,qty:qty,cat:ct,images:[i1,i2,i3].filter(Boolean),video:vd});} ['pName','pPrice','pQty','pImg1','pImg2','pImg3','pVideo'].forEach(id=>document.getElementById(id).value='');localStorage.setItem('minimall_products',JSON.stringify(products));msg.textContent='Saved!';setTimeout(()=>msg.textContent='',2000);render();}
-function editProduct(id){let p=products.find(x=>x.id===id);pName.value=p.name;pPrice.value=p.price;pQty.value=p.qty||p.quantity||'';pCat.value=p.cat;pImg1.value=p.images[0]||'';pImg2.value=p.images[1]||'';pImg3.value=p.images[2]||'';pVideo.value=p.video||'';editId=id;document.querySelectorAll('button.main')[1].textContent='Update';cancelBtn.style.display='block';window.scrollTo(0,200);}
-function cancelEdit(){editId=null;['pName','pPrice','pQty','pImg1','pImg2','pImg3','pVideo'].forEach(id=>document.getElementById(id).value='');document.querySelectorAll('button.main')[1].textContent='Add to Shop';cancelBtn.style.display='none';}
-function deleteProduct(id){if(confirm('Delete?')){products=products.filter(x=>x.id!==id);localStorage.setItem('minimall_products',JSON.stringify(products));render();}}
-function deleteAllProducts(){if(confirm('Delete ALL Products?')){products=[];localStorage.setItem('minimall_products','[]');render();}}
-function deleteAllOrders(){if(confirm('Delete ALL Orders?')){orders=[];localStorage.setItem('minimall_orders','[]');renderOrders();}}
-function updateStatus(id,s){let o=orders.find(x=>x.id===id);o.status=s;localStorage.setItem('minimall_orders',JSON.stringify(orders));renderOrders();}
-function deleteOrder(id){if(confirm('Delete order?')){orders=orders.filter(x=>x.id!==id);localStorage.setItem('minimall_orders',JSON.stringify(orders));renderOrders();}}
-function render(){count.textContent=products.length;list.innerHTML=products.map(p=>`<div class="p"><img src="${p.images[0]}"><div style="font-weight:700;font-size:13px">${p.name}</div><div style="font-size:12px">MRP ₹${p.price} / ${p.qty} - ${p.cat}</div><div style="margin-top:6px"><button class="small" style="background:#1a73e8" onclick="editProduct(${p.id})">Edit</button> <button class="small" style="background:#222" onclick="deleteProduct(${p.id})">Del</button></div></div>`).join('');}
-function renderOrders(){oCount.textContent=orders.length;if(!orders.length){ordersAdmin.innerHTML='<div style="color:#888">No orders</div>';return;}ordersAdmin.innerHTML=orders.map(o=>`<div class="order"><div style="font-weight:800">${o.name} (${o.qty}) - MRP ₹${o.price} Total ₹${o.total}</div><div style="font-size:12px">Customer: ${o.customer.name} | ${o.customer.phone} | ${o.customer.pay}</div><div style="font-size:12px">Plot: ${o.customer.plot}, Apt: ${o.customer.apt}</div><div style="font-size:11px">Addr: ${o.customer.addr} ${o.customer.pin?'- Pin:'+o.customer.pin:''} | ${o.date}</div><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><select onchange="updateStatus(${o.id},this.value)" style="width:auto;padding:6px"><option ${o.status==='Placed'?'selected':''}>Placed</option><option ${o.status==='Packed'?'selected':''}>Packed</option><option ${o.status==='Shipped'?'selected':''}>Shipped</option><option ${o.status==='Delivered'?'selected':''}>Delivered</option></select><button class="small" style="background:#ef4444" onclick="deleteOrder(${o.id})">Delete</button><button class="small" style="background:#25d366" onclick="window.open('https://wa.me/${o.customer.phone}?text=Hi ${o.customer.name}, your order ${o.name} is ${o.status}','_blank')">WhatsApp</button></div></div>`).join('');}
-render();renderOrders();
-</script>
-</body></html>
+let products=[]; let fileSha=null;
+let GH_TOKEN = localStorage.getItem('gh_token')||'';
+let GH_REPO = localStorage.getItem('gh_repo')||''; // ex: umasvara/mini-mall
+if(GH_TOKEN){ gitToken.value=GH_TOKEN; } if(GH_REPO){ gitRepo.value=GH_REPO; }
+
+function saveSetup(){ GH_TOKEN=gitToken.value.trim(); GH_REPO=gitRepo.value.trim(); localStorage.setItem('gh_token',GH_TOKEN); localStorage.setItem('gh_repo',GH_REPO); setupStatus.textContent='Saved! Ippudu add/delete cheyochu - direct GitHub update avuthundi'; loadCloud(); }
+
+async function loadCloud(){
+ try{
+  let res=await fetch('./products.json?v='+Date.now());
+  products=await res.json(); if(!Array.isArray(products)) products=[];
+  // Get SHA for update
+  if(GH_TOKEN && GH_REPO){
+    let api=await fetch(`https://api.github.com/repos/${GH_REPO}/contents/products.json`);
+    if(api.ok){ let j=await api.json(); fileSha=j.sha; }
+  }
+ }catch(e){ products=[]; }
+ render();
+}
+async function pushToGithub(){
+ if(!GH_TOKEN || !GH_REPO){ alert('First time setup lo GitHub Token and Repo pettu'); return false; }
+ try{
+  let content=btoa(unescape(encodeURIComponent(JSON.stringify(products,null,2))));
+  let body={message:'Update products from Admin App', content:content, sha:fileSha};
+  let res=await fetch(`https://api.github.com/repos/${GH_REPO}/contents/products.json`,{method:'PUT',headers:{'Authorization':'token '+GH_TOKEN,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  let data=await res.json();
+  if(data.content){ fileSha=data.content.sha; msg.textContent='Updated! 1-2 mins lo buyer site lo kanipistundi'; setTimeout(()=>msg.textContent='',3000); return true;}
+  else{ alert('GitHub Error: '+(data.message||'Check token')); return false;}
+ }catch(e){ alert('GitHub update failed: '+e); return false;}
+}
+async function saveProduct(){
+ let n=pName.value.trim(), pr=parseInt(pPrice.value), qty=pQty.value.trim(), ct=pCat.value, img=pImg1.value.trim();
+ if(!n||!pr||!qty||!img){ alert('Fill all'); return; }
+ products.unshift({id:Date.now(),name:n,price:pr,qty:qty,cat:ct,images:[img]});
+ ['pName','pPrice','pQty','pImg1'].forEach(id=>document.getElementById(id).value='');
+ await pushToGithub(); render();
+}
+async function deleteProduct(id){
+ if(!confirm('Delete? Buyer site lo kuda pothundi - 1-2 min pattuthundi')) return;
+ products=products.filter(x=>x.id!==id);
+ await pushToGithub(); render();
+}
+function render(){ count.textContent=products.length; list.innerHTML=products.map(p=>`<div class="p"><img src="${p.images[0]}" onerror="this.src='https://via.placeholder.com/150'"><div style="font-weight:700;font-size:13px">${p.name}</div><div style="font-size:11px">₹${p.price} / ${p.qty} - ${p.cat}</div><button class="small" style="background:#111;margin-top:6px" onclick="deleteProduct(${p.id})">Del - Auto delete on buyer site</button></div>`).join('');}
+loadCloud();
+</script></body></html>
