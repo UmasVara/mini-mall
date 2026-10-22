@@ -30,11 +30,11 @@
 </div>
 
 <div class="card">
-<h3>Customer Orders - Tracking (<span id="oCount">0</span>)</h3>
+<h3>Customer Orders - Tracking (<span id="oCount">0</span>) <button onclick="deleteAllOrders()" style="background:#ef4444;color:#fff;border:0;padding:6px 10px;border-radius:6px;float:right">Delete All Orders</button></h3>
 <div id="ordersAdmin"></div>
 </div>
 
-<h3>Products (<span id="count">0</span>)</h3>
+<h3>Products (<span id="count">0</span>) <button onclick="deleteAllProducts()" style="background:#ef4444;color:#fff;border:0;padding:6px 10px;border-radius:6px;margin-left:10px">Delete All</button></h3>
 <div id="list" class="products"></div>
 
 <script>
@@ -42,7 +42,6 @@ let products=JSON.parse(localStorage.getItem('minimall_products')||'[]');
 let orders=JSON.parse(localStorage.getItem('minimall_orders')||'[]');
 let settings=JSON.parse(localStorage.getItem('minimall_settings')||'{"upi":"umasvara@upi","wa":"919000000000","delivery":0,"cod":true}');
 let editId=null;
-products=products.filter(p=>!['Mens','Sarees','Home','Electronics'].includes(p.cat));
 function loadSettings(){sUpi.value=settings.upi||'';sWa.value=settings.wa||'';sDelivery.value=settings.delivery||0;sCod.value=(settings.cod?'true':'false');}
 function saveSettings(){settings={upi:sUpi.value.trim(),wa:sWa.value.trim(),delivery:parseInt(sDelivery.value||0),cod:sCod.value==='true'};localStorage.setItem('minimall_settings',JSON.stringify(settings));sMsg.textContent='Settings Saved!';setTimeout(()=>sMsg.textContent='',2000);}
 loadSettings();
@@ -50,6 +49,8 @@ function saveProduct(){let n=pName.value.trim(),pr=pPrice.value,qty=pQty.value.t
 function editProduct(id){let p=products.find(x=>x.id===id);pName.value=p.name;pPrice.value=p.price;pQty.value=p.qty||p.quantity||'';pCat.value=p.cat;pImg1.value=p.images[0]||'';pImg2.value=p.images[1]||'';pImg3.value=p.images[2]||'';pVideo.value=p.video||'';editId=id;document.querySelectorAll('button.main')[1].textContent='Update';cancelBtn.style.display='block';window.scrollTo(0,200);}
 function cancelEdit(){editId=null;['pName','pPrice','pQty','pImg1','pImg2','pImg3','pVideo'].forEach(id=>document.getElementById(id).value='');document.querySelectorAll('button.main')[1].textContent='Add to Shop';cancelBtn.style.display='none';}
 function deleteProduct(id){if(confirm('Delete?')){products=products.filter(x=>x.id!==id);localStorage.setItem('minimall_products',JSON.stringify(products));render();}}
+function deleteAllProducts(){if(confirm('Delete ALL Products?')){products=[];localStorage.setItem('minimall_products','[]');render();}}
+function deleteAllOrders(){if(confirm('Delete ALL Orders?')){orders=[];localStorage.setItem('minimall_orders','[]');renderOrders();}}
 function updateStatus(id,s){let o=orders.find(x=>x.id===id);o.status=s;localStorage.setItem('minimall_orders',JSON.stringify(orders));renderOrders();}
 function deleteOrder(id){if(confirm('Delete order?')){orders=orders.filter(x=>x.id!==id);localStorage.setItem('minimall_orders',JSON.stringify(orders));renderOrders();}}
 function render(){count.textContent=products.length;list.innerHTML=products.map(p=>`<div class="p"><img src="${p.images[0]}"><div style="font-weight:700;font-size:13px">${p.name}</div><div style="font-size:12px">MRP ₹${p.price} / ${p.qty} - ${p.cat}</div><div style="margin-top:6px"><button class="small" style="background:#1a73e8" onclick="editProduct(${p.id})">Edit</button> <button class="small" style="background:#222" onclick="deleteProduct(${p.id})">Del</button></div></div>`).join('');}
