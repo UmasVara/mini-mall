@@ -1,8 +1,9 @@
 {
-  "name": "Mini-Mall - Vegetables & Grocery",
+  "name": "Mini-Mall",
   "short_name": "Mini-Mall",
-  "description": "Fresh vegetables and groceries delivered from Mini-Mall",
-  "start_url": "./",
+  "id": "/mini-mall/",
+  "start_url": "/mini-mall/",
+  "scope": "/mini-mall/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0b7a3e",
@@ -10,14 +11,12 @@
     {
       "src": "umas-india-192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/png"
     },
     {
       "src": "umas-india-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 }
