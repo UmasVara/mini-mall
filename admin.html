@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mini-Mall Admin</title>
+<style>body{font-family:system-ui;background:#f2f2f7;margin:0;padding:14px}.card{background:#fff;border-radius:16px;padding:16px}input,select{width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;margin-bottom:10px;box-sizing:border-box}button.main{background:#111;color:#fff;border:0;padding:14px;width:100%;border-radius:10px;font-weight:800;font-size:16px}.products{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.p{background:#fff;border-radius:12px;padding:8px}.p img{width:100%;height:140px;object-fit:cover;border-radius:8px}</style></head>
+<body>
+<h2>Mini-Mall Admin</h2>
+<div class="card">
+<input id="pName" placeholder="Name - e.g. Potato 1kg">
+<input id="pPrice" type="number" placeholder="Our Price">
+<input id="pMrp" type="number" placeholder="MRP">
+<select id="pCat"><option>Vegetables</option><option>Grocery</option><option>Mens</option><option>Sarees</option><option>Home</option><option>Electronics</option><option>Others</option></select>
+<input id="pImg1" placeholder="Image 1 URL - main">
+<input id="pImg2" placeholder="Image 2 URL">
+<input id="pImg3" placeholder="Image 3 URL">
+<input id="pVideo" placeholder="Video YouTube link optional">
+<button type="button" class="main" onclick="saveProduct()">Add to Mini-Mall</button>
+<button type="button" id="cancelBtn" style="display:none;width:100%;margin-top:8px;padding:12px;background:#eee;border:0;border-radius:10px" onclick="cancelEdit()">Cancel</button>
+<div id="msg" style="color:green;font-weight:700;margin-top:8px;text-align:center"></div>
+</div>
+<h3>Products (<span id="count">0</span>)</h3>
+<div id="list" class="products"></div>
+<script>
+let products=[]; try{products=JSON.parse(localStorage.getItem('minimall_products')||'[]')}catch(e){}
+let editId=null;
+if(products.length===0){products=[
+{id:1,name:'Fresh Tomato 1kg',price:30,mrp:50,cat:'Vegetables',images:['https://images.unsplash.com/photo-1582284540020-8acbe03f4924?w=500'],video:''},
+{id:2,name:'Mens Casual Shirt',price:600,mrp:2000,cat:'Mens',images:['https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=500'],video:''},
+{id:3,name:'Atta 5kg',price:180,mrp:250,cat:'Grocery',images:['https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=500'],video:''}
+]; localStorage.setItem('minimall_products',JSON.stringify(products));}
+function saveProduct(){
+ let n=document.getElementById('pName').value.trim(), pr=document.getElementById('pPrice').value, mr=document.getElementById('pMrp').value, ct=document.getElementById('pCat').value, i1=document.getElementById('pImg1').value.trim(), i2=document.getElementById('pImg2').value.trim(), i3=document.getElementById('pImg3').value.trim(), vd=document.getElementById('pVideo').value.trim();
+ if(!n||!pr||!i1){alert('Need Name, Price, Image1');return;}
+ let pNum=parseInt(pr), mNum=parseInt(mr||pr);
+ if(editId!==null){let idx=products.findIndex(x=>x.id===editId);products[idx]={id:editId,name:n,price:pNum,mrp:mNum,cat:ct,images:[i1,i2,i3].filter(Boolean),video:vd};editId=null;document.querySelector('button.main').textContent='Add to Mini-Mall';document.getElementById('cancelBtn').style.display='none';}
+ else{products.unshift({id:Date.now(),name:n,price:pNum,mrp:mNum,cat:ct,images:[i1,i2,i3].filter(Boolean),video:vd});}
+ ['pName','pPrice','pMrp','pImg1','pImg2','pImg3','pVideo'].forEach(id=>document.getElementById(id).value='');
+ localStorage.setItem('minimall_products',JSON.stringify(products));
+ document.getElementById('msg').textContent='Saved!'; setTimeout(()=>document.getElementById('msg').textContent='',2000); render();
+}
+function editProduct(id){let p=products.find(x=>x.id===id);document.getElementById('pName').value=p.name;document.getElementById('pPrice').value=p.price;document.getElementById('pMrp').value=p.mrp;document.getElementById('pCat').value=p.cat;document.getElementById('pImg1').value=p.images[0]||'';document.getElementById('pImg2').value=p.images[1]||'';document.getElementById('pImg3').value=p.images[2]||'';document.getElementById('pVideo').value=p.video||'';editId=id;document.querySelector('button.main').textContent='Update';document.getElementById('cancelBtn').style.display='block';scrollTo(0,0);}
+function cancelEdit(){editId=null;['pName','pPrice','pMrp','pImg1','pImg2','pImg3','pVideo'].forEach(id=>document.getElementById(id).value='');document.querySelector('button.main').textContent='Add to Mini-Mall';document.getElementById('cancelBtn').style.display='none';}
+function deleteProduct(id){if(confirm('Delete?')){products=products.filter(x=>x.id!==id);localStorage.setItem('minimall_products',JSON.stringify(products));render();}}
+function render(){document.getElementById('count').textContent=products.length;document.getElementById('list').innerHTML=products.map(p=>`<div class="p"><img src="${p.images[0]}"><div style="font-weight:700">${p.name}</div><div style="font-size:12px">₹${p.price} <s>₹${p.mrp}</s> - ${p.cat}</div><div style="margin-top:6px"><button onclick="editProduct(${p.id})" style="background:#1a73e8;color:#fff;border:0;padding:6px 10px;border-radius:6px">Edit</button> <button onclick="deleteProduct(${p.id})" style="background:#222;color:#fff;border:0;padding:6px 10px;border-radius:6px">Delete</button></div></div>`).join('');}
+render();
+</script>
+</body></html>
