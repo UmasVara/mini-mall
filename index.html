@@ -102,4 +102,10 @@ function toggleOrders(){ordersBox.style.display=ordersBox.style.display==='none'
 function placeCartOrder(){let nm=cName.value.trim(),ph=cPhone.value.trim(),pl=cPlot.value.trim(),ap=cApt.value.trim(),ad=cAddr.value.trim(),pin=cPin.value.trim(),pay=cPay.value;if(!nm||!ph||!pl||!ap||!ad){alert('Fill Name Phone Plot Apt Address');return;}let sub=cart.reduce((a,b)=>a+b.price*b.qnty,0);let del=settings.delivery||0;let o={id:Date.now(),name:cart.map(x=>x.name+' x'+x.qnty).join(', '),price:sub,image:cart[0].image,customer:{name:nm,phone:ph,plot:pl,apt:ap,addr:ad,pin:pin,pay:pay},status:'Placed',date:new Date().toLocaleString(),total:sub+del};orders.unshift(o);localStorage.setItem('minimall_orders',JSON.stringify(orders));cart=[];saveCart();renderCart();closeCart();alert('Order Placed!');}
 render();updateCount();
 </script>
+  <script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
+</body>
 </body></html>
