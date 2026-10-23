@@ -128,4 +128,39 @@ function placeOrder(){
 }
 
 function loadOrders(){
-  db.collection("orders").order
+  db.collection("orders").orderBy("createdAt","desc").onSnapshot(snap=>{
+    const div=document.getElementById('ordersList'); div.innerHTML=""; 
+    snap.forEach(doc=>{
+      const o=doc.data();
+      div.innerHTML+=`<div class="border p-3 rounded-xl mb-3 text-sm bg-gray-50"><div class="flex justify-between"><b>${o.orderId}</b><span class="bg-black text-white text-xs px-2 py-1 rounded">${o.status}</span></div><div class="mt-2">${o.customerName} - ${o.customerPhone}<br>${o.items.map(i=>i.name).join(', ')}<br><b>₹${o.total}</b> - ${o.address||''}</div><select onchange="updateStatus('${o.orderId}',this.value)" class="mt-2 w-full border p-2 rounded text-xs">${statuses.map(s=>`<option ${s===o.status?'selected':''}>${s}</option>`).join('')}</select><button onclick="sendUpdate('${o.customerPhone}','${o.orderId}','${o.status}')" class="text-xs text-green-600 mt-1">Send WhatsApp Update</button></div>`;
+    });
+  });
+}
+function updateStatus(id,newStatus){ db.collection("orders").doc(id).update({status:newStatus}).then(()=>alert("Status updated to "+newStatus+" - Buyer will see live!")); }
+
+function trackOrder(){
+  const q=document.getElementById('trackPhone').value.trim(); if(!q) return;
+  const resDiv=document.getElementById('trackResult'); resDiv.innerHTML="Searching...";
+  // Try as orderId first
+  db.collection("orders").doc(q).get().then(doc=>{
+    if(doc.exists) showTrack([doc.data()]);
+    else{
+      // Search by phone
+      db.collection("orders").where("customerPhone","==",q).orderBy("createdAt","desc").get().then(snap=>{
+        if(snap.empty) resDiv.innerHTML="No orders found with that phone/ID";
+        else showTrack(snap.docs.map(d=>d.data()));
+      });
+    }
+  });
+}
+function showTrack(orders){
+  const div=document.getElementById('trackResult'); div.innerHTML="";
+  orders.forEach(o=>{
+    const currentIndex = statuses.indexOf(o.status);
+    div.innerHTML+=`<div class="border-t pt-3 mt-3"><b>${o.orderId}</b> - ₹${o.total}<br><div class="flex gap-1 mt-2">${statuses.map((s,i)=>`<div class="flex-1 text-center"><div class="h-2 rounded ${i<=currentIndex?'bg-green-500':'bg-gray-200'}"></div><div class="text-[9px] mt-1 ${i<=currentIndex?'font-bold':''}">${s}</div></div>`).join('')}</div><div class="text-xs mt-2 text-gray-600">${o.items.map(i=>i.name).join(', ')}</div><div class="text-xs mt-1">Status: <b class="text-green-600">${o.status}</b></div></div>`;
+  });
+}
+function sendUpdate(phone,orderId,status){ if(paymentSettings.wa){ window.open(`https://wa.me/${phone}?text=${encodeURIComponent(`Hi! Your Mini Mall order ${orderId} is now: ${status}`)}`); } }
+</script>
+</body>
+  </html>
