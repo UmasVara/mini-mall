@@ -103,7 +103,7 @@ function filterCat(cat){
 }
 function renderFiltered(){
   const con=document.getElementById('products');
-  let filtered = currentCat==='All' ? allProducts : allProducts.filter(p=>p.category===currentCat);
+  let filtered = currentCat==='All' ? allProducts : allProducts.filter(obj=> (obj.p.category||'Others')===currentCat);
   if(filtered.length===0){ con.innerHTML=`<div class='col-span-4 text-center py-20 text-gray-400'>No products in ${currentCat}</div>`; return; }
   con.innerHTML="";
   filtered.forEach(({id,p})=>{
