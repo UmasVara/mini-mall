@@ -8,7 +8,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body class="bg-gray-50">
-
 <div class="bg-white p-4 flex justify-between shadow sticky top-0 z-20">
   <h1 id="shopTitle" class="font-bold text-[20px] select-none cursor-pointer">Mini Mall 🛒 LIVE</h1>
   <div class="flex gap-2">
@@ -16,9 +15,7 @@
     <button id="cartBtn" class="bg-black text-white px-5 py-2 rounded-full text-sm font-bold">Cart (<span id="cartCount">0</span>)</button>
   </div>
 </div>
-
 <div id="toast" class="hidden fixed top-20 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-4 py-2 rounded-full z-50">Added to Cart ✓</div>
-
 <div class="max-w-6xl mx-auto p-4">
   <div id="adminPanel" class="hidden bg-white p-5 rounded-2xl shadow-lg mb-6 border-2 border-black">
     <div class="flex gap-2 mb-4 flex-wrap">
@@ -29,14 +26,8 @@
     </div>
     <div id="admin-products">
       <input id="pname" placeholder="Product Name" class="w-full border p-2.5 rounded-lg mb-2">
-      <input id="pimage" placeholder="Image URL https://..." class="w-full border p-2.5 rounded-lg mb-2">
-      <select id="pcat" class="w-full border p-2.5 rounded-lg mb-2 bg-white">
-        <option value="Vegetables">🥕 Vegetables</option>
-        <option value="Grocery">🛒 Grocery</option>
-        <option value="Milk">🥛 Milk & Dairy</option>
-        <option value="Fruits">🍎 Fruits</option>
-        <option value="Others">📦 Others</option>
-      </select>
+      <input id="pimage" placeholder="Image URL" class="w-full border p-2.5 rounded-lg mb-2">
+      <select id="pcat" class="w-full border p-2.5 rounded-lg mb-2 bg-white"><option value="Vegetables">🥕 Vegetables</option><option value="Grocery">🛒 Grocery</option><option value="Milk">🥛 Milk & Dairy</option><option value="Fruits">🍎 Fruits</option><option value="Others">📦 Others</option></select>
       <div id="varList" class="space-y-2 mb-2"></div>
       <button onclick="addVar()" class="text-xs text-blue-600 mb-3">+ Add variant</button>
       <button onclick="addProduct()" id="addBtn" class="w-full bg-black text-white py-3 rounded-xl font-bold">+ Add Product</button>
@@ -52,91 +43,39 @@
       <button onclick="savePay()" class="w-full bg-green-600 text-white py-3 rounded-xl">Save</button>
     </div>
   </div>
-
-  <div id="catFilter" class="flex gap-2 overflow-x-auto pb-3 mb-2">
-    <button onclick="filterCat('All')" data-cat="All" class="cat-btn bg-black text-white px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap">All</button>
-    <button onclick="filterCat('Vegetables')" data-cat="Vegetables" class="cat-btn bg-white border px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap">🥕 Vegetables</button>
-    <button onclick="filterCat('Grocery')" data-cat="Grocery" class="cat-btn bg-white border px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap">🛒 Grocery</button>
-    <button onclick="filterCat('Milk')" data-cat="Milk" class="cat-btn bg-white border px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap">🥛 Milk</button>
-    <button onclick="filterCat('Fruits')" data-cat="Fruits" class="cat-btn bg-white border px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap">🍎 Fruits</button>
-    <button onclick="filterCat('Others')" data-cat="Others" class="cat-btn bg-white border px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap">📦 Others</button>
-  </div>
-
+  <div id="catFilter" class="flex gap-2 overflow-x-auto pb-3 mb-2"><button onclick="filterCat('All')" data-cat="All" class="cat-btn bg-black text-white px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap">All</button><button onclick="filterCat('Vegetables')" data-cat="Vegetables" class="cat-btn bg-white border px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap">🥕 Vegetables</button><button onclick="filterCat('Grocery')" data-cat="Grocery" class="cat-btn bg-white border px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap">🛒 Grocery</button><button onclick="filterCat('Milk')" data-cat="Milk" class="cat-btn bg-white border px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap">🥛 Milk</button><button onclick="filterCat('Fruits')" data-cat="Fruits" class="cat-btn bg-white border px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap">🍎 Fruits</button><button onclick="filterCat('Others')" data-cat="Others" class="cat-btn bg-white border px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap">📦 Others</button></div>
   <div id="products" class="grid grid-cols-2 md:grid-cols-4 gap-4"><div class="col-span-4 text-center py-20 text-gray-400">Loading...</div></div>
 </div>
-
 <div id="trackBox" class="hidden fixed inset-0 bg-black/60 z-40 flex items-start justify-center pt-16"><div class="bg-white w-[95%] max-w-md p-6 rounded-2xl"><div class="flex justify-between"><b>Track Order</b><button id="closeTrack" class="text-xl">✕</button></div><input id="trackInput" placeholder="Order ID or Phone" class="w-full border p-3 rounded-xl mt-4"><button onclick="doTrack()" class="w-full bg-black text-white py-3 rounded-xl mt-3">Track</button><div id="trackRes" class="mt-4 max-h-96 overflow-auto"></div></div></div>
 <div id="cartBox" class="hidden fixed inset-0 bg-black/60 z-40"><div class="bg-white w-[90%] max-w-sm ml-auto h-full p-5 flex flex-col"><div class="flex justify-between mb-4"><b>Checkout</b><button id="closeCart">✕</button></div><div id="cartItems" class="flex-1 overflow-auto"></div><div class="border-t pt-3 space-y-2"><input id="cName" placeholder="Your Name" class="w-full border p-2.5 rounded-lg"><input id="cPhone" placeholder="Phone Number" class="w-full border p-2.5 rounded-lg"><input id="cAddr" placeholder="Full Address" class="w-full border p-2.5 rounded-lg"><div id="payInfo" class="bg-gray-100 p-2 rounded text-xs"></div><select id="payMethod" class="w-full border p-2.5 rounded-lg text-sm"></select><button onclick="placeOrder()" class="w-full bg-black text-white py-3 rounded-xl font-bold">Place Order</button></div></div></div>
-
 <script>
 function openCart(){ document.getElementById('cartBox').classList.toggle('hidden'); }
 function openTrack(){ document.getElementById('trackBox').classList.toggle('hidden'); }
 document.getElementById('cartBtn').onclick=openCart; document.getElementById('trackBtn').onclick=openTrack;
 document.getElementById('closeCart').onclick=openCart; document.getElementById('closeTrack').onclick=openTrack;
 let tapCount=0; document.getElementById('shopTitle').onclick=function(){ tapCount++; if(tapCount>=3){ tapCount=0; let p=prompt("Password"); if(p==="nasvara123"){ localStorage.setItem('isAdmin','yes'); location.reload(); } } setTimeout(()=>tapCount=0,1500); };
-
 const firebaseConfig = { apiKey: "AIzaSyCNUpsZ3KOAAdn3-CSQhS65gcKqDDxAjSs", authDomain: "mini-mall-94817.firebaseapp.com", projectId: "mini-mall-94817", storageBucket: "mini-mall-94817.firebasestorage.app", messagingSenderId: "638018323167", appId: "1:638018323167:web:df3ba18d8b78a592401f6a" };
 firebase.initializeApp(firebaseConfig); const db=firebase.firestore();
 let cart=[], editId=null, isAdmin=false, allProducts=[], currentCat='All';
 let payment = JSON.parse(localStorage.getItem('pay')||'{"enableCOD":true,"enableUPI":true,"enableWA":true,"upi":"905287871108@ybl","wa":"919052878711"}');
 const statuses=["Placed","Packed","Shipped","Delivered","Cancelled"];
 function formatDate(ts){ if(!ts) return ""; let d=ts.toDate?ts.toDate():new Date(ts); return d.toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}); }
-function checkAdmin(){ if(localStorage.getItem('isAdmin')==='yes' || location.search.includes('admin=nasvara')){ localStorage.setItem('isAdmin','yes'); isAdmin=true; document.getElementById('adminPanel').classList.remove('hidden'); document.getElementById('upiId').value=payment.upi||""; document.getElementById('waNum').value=payment.wa||""; document.getElementById('enableCOD').checked=payment.enableCOD!==false; document.getElementById('enableUPI').checked=payment.enableUPI!==false; document.getElementById('enableWA').checked=payment.enableWA!==false; resetVarList(); } } checkAdmin();
+function checkAdmin(){ if(localStorage.getItem('isAdmin')==='yes' || location.search.includes('admin=nasvara')){ localStorage.setItem('isAdmin','yes'); isAdmin=true; document.getElementById('adminPanel').classList.remove('hidden'); document.getElementById('upiId').value=payment.upi||""; document.getElementById('waNum').value=payment.wa||""; document.getElementById('enableCOD').checked=payment.enableCOD!==false; document.getElementById('enableUPI').checked=payment.enableUPI!==false; document.getElementById('enableWA').checked=payment.enableWA!==false; } resetVarList(); } checkAdmin();
 function logout(){ localStorage.removeItem('isAdmin'); location.href=location.pathname; }
 function tab(t){ ['products','orders','payment'].forEach(x=>{ document.getElementById('admin-'+x).classList.add('hidden'); document.getElementById('t-'+x).className='bg-gray-200 px-4 py-2 rounded-lg text-sm'; }); document.getElementById('admin-'+t).classList.remove('hidden'); document.getElementById('t-'+t).className='bg-black text-white px-4 py-2 rounded-lg text-sm'; if(t==='orders') loadOrders(); }
-
-function resetVarList(){
-  const list=document.getElementById('varList');
-  list.innerHTML=`<div class="flex gap-2"><input placeholder="500g" class="v-label w-1/3 border p-2 rounded text-sm"><input placeholder="Price" type="number" class="v-price w-1/3 border p-2 rounded text-sm"><input placeholder="Stock" class="v-stock w-1/3 border p-2 rounded text-sm"></div><div class="flex gap-2"><input placeholder="1kg" class="v-label w-1/3 border p-2 rounded text-sm"><input placeholder="Price" type="number" class="v-price w-1/3 border p-2 rounded text-sm"><input placeholder="Stock" class="v-stock w-1/3 border p-2 rounded text-sm"></div>`;
-}
+function resetVarList(){ const list=document.getElementById('varList'); list.innerHTML=`<div class="flex gap-2"><input placeholder="500g" class="v-label w-1/3 border p-2 rounded text-sm"><input placeholder="Price" type="number" class="v-price w-1/3 border p-2 rounded text-sm"><input placeholder="Stock" class="v-stock w-1/3 border p-2 rounded text-sm"></div><div class="flex gap-2"><input placeholder="1kg" class="v-label w-1/3 border p-2 rounded text-sm"><input placeholder="Price" type="number" class="v-price w-1/3 border p-2 rounded text-sm"><input placeholder="Stock" class="v-stock w-1/3 border p-2 rounded text-sm"></div>`; }
 function addVar(v={}){ const d=document.createElement('div'); d.className='flex gap-2'; d.innerHTML=`<input placeholder="Label" value="${v.label||''}" class="v-label w-1/3 border p-2 rounded text-sm"><input placeholder="Price" value="${v.price||''}" type="number" class="v-price w-1/3 border p-2 rounded text-sm"><input placeholder="Stock" value="${v.stock||''}" class="v-stock w-1/3 border p-2 rounded text-sm">`; document.getElementById('varList').appendChild(d); }
-
-function addProduct(){
-  const name=document.getElementById('pname').value.trim(), image=document.getElementById('pimage').value.trim(), cat=document.getElementById('pcat').value;
-  const labels=document.querySelectorAll('.v-label'), prices=document.querySelectorAll('.v-price'), stocks=document.querySelectorAll('.v-stock');
-  let variants=[]; for(let i=0;i<labels.length;i++){ if(labels[i].value && prices[i].value) variants.push({label:labels[i].value, price:Number(prices[i].value), stock:Number(stocks[i].value||0)}); }
-  if(!name) return alert("Enter name"); if(variants.length===0) return alert("Enter at least one variant price");
-  const data={name,image,category:cat,variants};
-  if(editId){ db.collection("products").doc(editId).update(data).then(()=>{ alert("Updated!"); cancelEdit(); }); } else db.collection("products").add(data).then(()=>{ alert("Added in "+cat+"!"); document.getElementById('pname').value=""; document.getElementById('pimage').value=""; resetVarList(); });
-}
+function addProduct(){ const name=document.getElementById('pname').value.trim(), image=document.getElementById('pimage').value.trim(), cat=document.getElementById('pcat').value; const labels=document.querySelectorAll('.v-label'), prices=document.querySelectorAll('.v-price'), stocks=document.querySelectorAll('.v-stock'); let variants=[]; for(let i=0;i<labels.length;i++){ if(labels[i].value && prices[i].value) variants.push({label:labels[i].value, price:Number(prices[i].value), stock:Number(stocks[i].value||0)}); } if(!name) return alert("Enter name"); if(variants.length===0) return alert("Enter at least one variant with price"); const data={name,image,category:cat,variants}; if(editId){ db.collection("products").doc(editId).update(data).then(()=>{ alert("Updated!"); cancelEdit(); }); } else db.collection("products").add(data).then(()=>{ alert("Added in "+cat+"!"); document.getElementById('pname').value=""; document.getElementById('pimage').value=""; resetVarList(); }); }
 function cancelEdit(){ editId=null; document.getElementById('pname').value=""; document.getElementById('pimage').value=""; document.getElementById('addBtn').innerText="+ Add Product"; document.getElementById('cancelBtn').classList.add('hidden'); resetVarList(); }
-
 function savePay(){ payment={ enableCOD:document.getElementById('enableCOD').checked, enableUPI:document.getElementById('enableUPI').checked, upi:document.getElementById('upiId').value.trim(), enableWA:document.getElementById('enableWA').checked, wa:document.getElementById('waNum').value.trim() }; localStorage.setItem('pay',JSON.stringify(payment)); db.collection("settings").doc("payment").set(payment); alert("Saved!"); updatePayUI(); }
 function updatePayUI(){ let info=[]; if(payment.enableCOD) info.push("✓ COD"); if(payment.enableUPI && payment.upi) info.push("✓ UPI: "+payment.upi); if(payment.enableWA) info.push("✓ WhatsApp"); document.getElementById('payInfo').innerHTML=info.join("<br>")||"Select payment"; const sel=document.getElementById('payMethod'); sel.innerHTML=""; if(payment.enableCOD) sel.innerHTML+=`<option value="COD">Cash on Delivery (COD)</option>`; if(payment.enableUPI) sel.innerHTML+=`<option value="UPI">UPI - ${payment.upi}</option>`; if(payment.enableWA) sel.innerHTML+=`<option value="WhatsApp">WhatsApp</option>`; }
 updatePayUI(); db.collection("settings").doc("payment").onSnapshot(d=>{ if(d.exists){ payment=d.data(); localStorage.setItem('pay',JSON.stringify(payment)); updatePayUI(); } });
-
 function filterCat(cat){ currentCat=cat; document.querySelectorAll('.cat-btn').forEach(b=>{ if(b.dataset.cat===cat){ b.className='cat-btn bg-black text-white px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap'; } else{ b.className='cat-btn bg-white border px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap'; } }); renderFiltered(); }
-function renderFiltered(){
-  const con=document.getElementById('products');
-  let filtered = currentCat==='All' ? allProducts : allProducts.filter(obj=> (obj.p.category||'Others')===currentCat);
-  if(filtered.length===0){ con.innerHTML=`<div class='col-span-4 text-center py-20 text-gray-400'>No products in ${currentCat}<br><button onclick="filterCat('All')" class='text-xs text-blue-600 mt-2'>Show All</button></div>`; return; }
-  con.innerHTML=""; filtered.forEach(({id,p})=>{ con.innerHTML+=`<div class="bg-white rounded-2xl p-3 shadow"><div class="relative"><img src="${p.image||'https://via.placeholder.com/300'}" class="w-full h-32 object-cover rounded-xl mb-2"><span class="absolute top-1 left-1 bg-black/70 text-white text-[8px] px-2 py-1 rounded-full">${p.category||'Others'}</span></div><h4 class="font-bold text-sm truncate">${p.name}</h4><select id="sel-${id}" class="w-full border text-xs p-2 rounded-lg mt-2 bg-white">${p.variants.map(v=>`<option value="${v.label}|${v.price}">${v.label} - ₹${v.price}</option>`).join('')}</select><button onclick="addToCart('${id}','${p.name.replace(/'/g,'')}',document.getElementById('sel-${id}').value)" class="w-full bg-black text-white text-xs py-2.5 rounded-lg mt-2">Add to Cart</button>${isAdmin?`<div class="flex gap-2 mt-2"><button onclick="editProd('${id}')" class="flex-1 bg-blue-50 text-blue-600 text-[10px] py-1 rounded">Edit</button><button onclick="delProd('${id}')" class="flex-1 bg-red-50 text-red-500 text-[10px] py-1 rounded">Delete</button></div>`:''}</div>`; });
-}
+function renderFiltered(){ const con=document.getElementById('products'); let filtered = currentCat==='All' ? allProducts : allProducts.filter(obj=> (obj.p.category||'Others')===currentCat); if(filtered.length===0){ con.innerHTML=`<div class='col-span-4 text-center py-20 text-gray-400'>No products in ${currentCat}<br><button onclick="filterCat('All')" class='text-xs text-blue-600 mt-2'>Show All</button></div>`; return; } con.innerHTML=""; filtered.forEach(({id,p})=>{ con.innerHTML+=`<div class="bg-white rounded-2xl p-3 shadow"><div class="relative"><img src="${p.image||'https://via.placeholder.com/300'}" class="w-full h-32 object-cover rounded-xl mb-2"><span class="absolute top-1 left-1 bg-black/70 text-white text-[8px] px-2 py-1 rounded-full">${p.category||'Others'}</span></div><h4 class="font-bold text-sm truncate">${p.name}</h4><select id="sel-${id}" class="w-full border text-xs p-2 rounded-lg mt-2 bg-white">${p.variants.map(v=>`<option value="${v.label}|${v.price}">${v.label} - ₹${v.price}</option>`).join('')}</select><button onclick="addToCart('${id}','${p.name.replace(/'/g,'')}',document.getElementById('sel-${id}').value)" class="w-full bg-black text-white text-xs py-2.5 rounded-lg mt-2">Add to Cart</button>${isAdmin?`<div class="flex gap-2 mt-2"><button onclick="editProd('${id}')" class="flex-1 bg-blue-50 text-blue-600 text-[10px] py-1 rounded">Edit</button><button onclick="delProd('${id}')" class="flex-1 bg-red-50 text-red-500 text-[10px] py-1 rounded">Delete</button></div>`:''}</div>`; }); }
 function renderProducts(snap){ allProducts=[]; snap.forEach(doc=>{ allProducts.push({id:doc.id,p:doc.data()}); }); renderFiltered(); }
-db.collection("products").onSnapshot(renderProducts);
-
-// FIXED EDIT - loads variants
-function editProd(id){
-  db.collection("products").doc(id).get().then(d=>{
-    const p=d.data();
-    document.getElementById('pname').value=p.name;
-    document.getElementById('pimage').value=p.image||"";
-    document.getElementById('pcat').value=p.category||"Others";
-    document.getElementById('varList').innerHTML="";
-    (p.variants||[]).forEach(v=> addVar(v));
-    if((p.variants||[]).length===0) resetVarList();
-    editId=id;
-    document.getElementById('addBtn').innerText="Update Product";
-    document.getElementById('cancelBtn').classList.remove('hidden');
-    window.scrollTo(0,0); tab('products');
-  });
-}
+db.collection("products").onSnapshot(renderProducts, err=>{ document.getElementById('products').innerHTML=`<div class='col-span-4 text-center py-10 text-xs text-red-500'>Firebase Error: ${err.message}<br><br>Go to Firebase Console -> Firestore -> Rules -> Change to:<br>allow read, write: if true;<br>Then Publish</div>`; });
+function editProd(id){ db.collection("products").doc(id).get().then(d=>{ const p=d.data(); document.getElementById('pname').value=p.name; document.getElementById('pimage').value=p.image||""; document.getElementById('pcat').value=p.category||"Others"; document.getElementById('varList').innerHTML=""; (p.variants||[]).forEach(v=> addVar(v)); if((p.variants||[]).length===0) resetVarList(); editId=id; document.getElementById('addBtn').innerText="Update Product"; document.getElementById('cancelBtn').classList.remove('hidden'); window.scrollTo(0,0); tab('products'); }); }
 function delProd(id){ if(confirm("Delete?")) db.collection("products").doc(id).delete(); }
 function addToCart(id,name,val){ const [label,price]=val.split('|'); const key=`${name} (${label})`; const existing=cart.find(c=>c.key===key); if(existing){ existing.qty+=1; } else { cart.push({id,key,name:key,price:Number(price),qty:1}); } renderCart(); const toast=document.getElementById('toast'); toast.classList.remove('hidden'); setTimeout(()=>toast.classList.add('hidden'),1200); }
 function changeQty(index,delta){ cart[index].qty+=delta; if(cart[index].qty<=0) cart.splice(index,1); renderCart(); }
-function renderCart(){ let totalQty=0; cart.forEach(c=>totalQty+=c.qty); document.getElementById('cartCount').innerText=totalQty; const c=document.getElementById('cartItems'); let total=0; c.innerHTML=""; if(cart.length===0){ c.innerHTML="<div class='text-center py-10 text-gray-400 text-sm'>Cart empty</div>"; return; } cart.forEach((item,i)=>{ total+=item.price*item.qty; c.innerHTML+=`<div class="flex justify-between items-center py-3 border-b"><div class="text-sm flex-1"><b>${item.name}</b><br><span class="text-xs text-gray-500">₹${item.price} x ${item.qty}</span></div><div class="flex items-center gap-2"><button onclick="changeQty(${i},-1)" class="w-7 h-7 bg-gray-200 rounded-full font-bold">-</button><span class="text-sm font-bold w-4 text-center">${item.qty}</span><button onclick="changeQty(${i},1)" class="w-7 h-7 bg-black text-white rounded-full font-bold">+</button></div><div class="ml-3 text-sm font-bold">₹${item.price*item.qty}</div></div>`; }); c.innerHTML+=`<div class="font-bold flex justify-between mt-4 text-lg"><span>Total</span><span>₹${total}</span></div>`; }
-function placeOrder(){ const name=document.getElementById('cName').value.trim(), phone=document.getElementById('cPhone').value.trim(), addr=document.getElementById('cAddr').value.trim(), method=document.getElementById('payMethod').value; if(!name||!phone) return alert("Enter name & phone"); let total=0; cart.forEach(i=>total+=i.price*i.qty); if(total===0) return alert("Cart empty"); const orderId="MM"+Math.floor(100000+Math.random()*900000); if(method==="UPI" && payment.upi){ const upiUrl=`upi://pay?pa=${encodeURIComponent(payment.upi)}&pn=${encodeURIComponent("Mini Mall")}&am=${encodeURIComponent(total)}&cu=INR&tn=${encodeURIComponent("Order "+orderId)}`; window.location.href=upiUrl; setTimeout(()=>{ if(confirm(`UPI ₹${total} opened. Did you pay? OK to place order`)){ saveOrder(orderId,name,phone,addr,method,total); } },1500); } else { saveOrder(orderId,name,phone,addr,method,total); } }
-function saveOrder(orderId,name,phone,addr,method,total){ db.collection("orders").doc(orderId).set({orderId,customerName:name,customerPhone:phone,address:addr,paymentMethod:method,items:cart,total,status:"Placed",createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{ alert(`Order ${orderId} Placed!`); cart=[]; renderCart(); openCart(); document.getElementById('trackInput').value=orderId; openTrack(); doTrack(); if(payment.enableWA && payment.wa) window.open(`https://wa.me/${payment.wa}?text=${encodeURIComponent(`New Order ${orderId} - ${method} - ₹${total} - ${name} ${phone} - ${addr}`)}`,'_blank'); }); }
-function loadOrders(){ db.collection("orders").onSnapshot(snap=>{ const div=document.getElementById('ordersList'); div.innerHTML=""; if(snap.empty){ div.innerHTML="<p class='text-sm text-gray-400'>No orders</p>"; return; } snap.forEach(doc=>{ const o=doc.data(); div.innerHTML+=`<div class="border p-3 rounded-xl bg-gray-50 text-sm mb-2"><div class="flex justify-between"><b>${o.orderId}</b><span class="bg-black text-white text-xs px-2 py-1 rounded-full">${o.status}</span></div><div class="text-[11px] text-gray-500 mt-1">📅 ${formatDate(o.createdAt)}</div><div class="mt-2">${o.customerName} ${o.customerPhone} - ${o.paymentMethod||''}<br>${(o.items||[]).map(i=>i.name+" x"+(i.qty||1)).join(', ')}<br><b>₹${o.total}</b></div><select onchange="db.collection('orders').doc('${o.orderId}').update({status:this.value})" class="mt-2 w-full border p-2 rounded text-xs bg-white">${statuses.map(s=>`<option ${s===o.status?'selected':''}>${s}</option>`).join('')}</select></div>`; }); }); }
-function doTrack(){ const q=document.getElementById('trackInput').value.trim(); const res=document.getElementById('trackRes'); if(!q) return; res.innerHTML="Searching..."; db.collection("orders").doc(q).get().then(doc=>{ if(doc.exists) showTrack([doc.data()]); else db.collection("orders").where("customerPhone","==",q).get().then(snap=>{ if(snap.empty) res.innerHTML="<p class='text-sm text-red-500 mt-3'>No order found</p>"; else showTrack(snap.docs.map(d=>d.data())); }); }); }
-function showTrack(orders){ const div=document.getElementById('trackRes'); div.innerHTML=""; orders.forEach(o=>{ const idx=statuses.indexOf(o.status); const isCancelled=o.status==="Cancelled"; div.innerHTML+=`<div class="border-t pt-3 mt-3"><b>${o.orderId}</b> - ₹${o.total} (${o.p
+function renderCart(){ let totalQty=0; cart.forEach(c=>totalQty+=c.qty); document.getElementById('cartCount').innerText=totalQty; const c=document.getElementById('cartItems'); let total=0; c.innerHTML=""; if(cart.length===0){ c.innerHTML="<div class='text-center py-10 text-gray-400 text-sm'>Cart empty</div>"; return; } cart.forEach((item,i)=>{ total+=item.price*item.qty; c.innerHTML+=`<div class="flex justify-between items-center py-3 border-b"><div class="text-sm flex-1"><b>${item.name}</b><br><span class="text-xs text-gray-500">₹${item.price} x ${item.qty}</span></div><div class="flex items-center gap-2"><button onclick="changeQty(${i},-1)" class="w-7 h-7 bg-gray-200 rounded-full font-bold">-</button><span class="text-sm font-bold w-4 text-center">${item.qty}</span><button onclick="changeQty(${i},1)" class
