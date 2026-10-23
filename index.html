@@ -4,89 +4,98 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mini Mall LIVE</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body class="bg-gray-50">
 
-<div class="bg-white p-4 flex justify-between shadow sticky top-0 z-50">
-  <h1 id="shopTitle" onclick="tap()" style="font-weight:bold;font-size:20px;cursor:pointer;user-select:none;">Mini Mall 🛒 LIVE</h1>
+<div class="bg-white p-4 flex justify-between shadow sticky top-0 z-20">
+  <h1 id="shopTitle" onclick="tap()" class="font-bold text-[20px] cursor-pointer select-none">Mini Mall 🛒 LIVE</h1>
   <div class="flex gap-2">
-    <button onclick="alert('Track: Coming soon - add orders first')" class="bg-gray-200 px-3 py-2 rounded-full text-xs">Track Order</button>
-    <button onclick="openCart()" class="bg-black text-white px-4 py-2 rounded-full text-sm">Cart (<span id="c">0</span>)</button>
+    <button onclick="openTrack()" class="bg-gray-200 px-4 py-2 rounded-full text-xs font-bold">Track Order</button>
+    <button onclick="openCart()" class="bg-black text-white px-5 py-2 rounded-full text-sm font-bold">Cart (<span id="cartCount">0</span>)</button>
   </div>
 </div>
 
-<div class="p-4">
-  <div id="admin" class="hidden bg-white p-4 rounded-2xl shadow mb-4 border-2 border-black">
-    <h3 class="font-bold mb-2">ADMIN PANEL (Only you see)</h3>
-    <input id="name" placeholder="Product Name ex: Rice" class="w-full border p-2 rounded mb-2">
-    <input id="price" placeholder="Price ex: 80" type="number" class="w-full border p-2 rounded mb-2">
-    <button onclick="add()" class="w-full bg-black text-white py-3 rounded-xl">+ Add Product</button>
-    <button onclick="logout()" class="w-full text-red-500 text-xs mt-3">Logout Admin</button>
+<div class="max-w-6xl mx-auto p-4">
+  <div id="adminPanel" class="hidden bg-white p-5 rounded-2xl shadow-lg mb-6 border-2 border-black">
+    <div class="flex gap-2 mb-4 flex-wrap">
+      <button onclick="tab('products')" id="t-products" class="bg-black text-white px-4 py-2 rounded-lg text-sm">Products</button>
+      <button onclick="tab('orders')" id="t-orders" class="bg-gray-200 px-4 py-2 rounded-lg text-sm">Orders</button>
+      <button onclick="tab('payment')" id="t-payment" class="bg-gray-200 px-4 py-2 rounded-lg text-sm">Payment</button>
+      <button onclick="logout()" class="ml-auto text-red-500 text-xs font-bold">Logout</button>
+    </div>
+
+    <div id="admin-products">
+      <input id="pname" placeholder="Product Name" class="w-full border p-2.5 rounded-lg mb-2">
+      <input id="pimage" placeholder="Image URL https://..." class="w-full border p-2.5 rounded-lg mb-2">
+      <div id="varList" class="space-y-2 mb-2">
+        <div class="flex gap-2"><input placeholder="500g" class="v-label w-1/3 border p-2 rounded text-sm"><input placeholder="Price" type="number" class="v-price w-1/3 border p-2 rounded text-sm"><input placeholder="Stock" class="v-stock w-1/3 border p-2 rounded text-sm"></div>
+        <div class="flex gap-2"><input placeholder="1kg" class="v-label w-1/3 border p-2 rounded text-sm"><input placeholder="Price" type="number" class="v-price w-1/3 border p-2 rounded text-sm"><input placeholder="Stock" class="v-stock w-1/3 border p-2 rounded text-sm"></div>
+      </div>
+      <button onclick="addVar()" class="text-xs text-blue-600 mb-3">+ Add variant</button>
+      <button onclick="addProduct()" id="addBtn" class="w-full bg-black text-white py-3 rounded-xl font-bold">+ Add Product</button>
+    </div>
+
+    <div id="admin-orders" class="hidden"><div id="ordersList"></div></div>
+
+    <div id="admin-payment" class="hidden space-y-3">
+      <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="enableCOD" checked> Enable COD (Cash on Delivery)</label>
+      <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="enableUPI"> Enable UPI Payment</label>
+      <input id="upiId" placeholder="UPI ID ex: nasvara@okicici" class="w-full border p-2.5 rounded-lg">
+      <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="enableWA" checked> Enable WhatsApp Order Alert</label>
+      <input id="waNum" placeholder="WhatsApp Number ex: 919876543210" class="w-full border p-2.5 rounded-lg">
+      <button onclick="savePay()" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold">Save Payment Settings</button>
+    </div>
   </div>
 
-  <div id="list" class="grid grid-cols-2 gap-4"></div>
+  <div id="products" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
 </div>
 
-<div id="cartBox" class="hidden fixed inset-0 bg-black/50 z-50">
-  <div class="bg-white w-[90%] max-w-sm ml-auto h-full p-5">
-    <div class="flex justify-between"><b>Your Cart</b><button onclick="openCart()">X</button></div>
-    <div id="cartItems" class="mt-4"></div>
-    <button onclick="order()" class="w-full bg-black text-white py-3 rounded-xl mt-6">Place Order (WhatsApp)</button>
-  </div>
-</div>
+<!-- TRACK BOX -->
+<div id="trackBox" class="hidden fixed inset-0 bg-black/50 z-40"><div class="bg-white w-[95%] max-w-md mx-auto mt-12 p-6 rounded-2xl"><div class="flex justify-between items-center"><b class="text-lg">Track Order</b><button onclick="openTrack()" class="text-xl">✕</button></div><input id="trackInput" placeholder="Enter Order ID or Phone" class="w-full border p-3 rounded-xl mt-4"><button onclick="doTrack()" class="w-full bg-black text-white py-3 rounded-xl mt-3 font-bold">Track Now</button><div id="trackRes" class="mt-4"></div></div></div>
+
+<!-- CART BOX -->
+<div id="cartBox" class="hidden fixed inset-0 bg-black/50 z-40"><div class="bg-white w-[90%] max-w-sm ml-auto h-full p-5 flex flex-col"><div class="flex justify-between mb-4"><b>Checkout</b><button onclick="openCart()">✕</button></div><div id="cartItems" class="flex-1 overflow-auto"></div><div class="border-t pt-3 space-y-2"><input id="cName" placeholder="Your Name" class="w-full border p-2.5 rounded-lg"><input id="cPhone" placeholder="Phone Number" class="w-full border p-2.5 rounded-lg"><input id="cAddr" placeholder="Full Address" class="w-full border p-2.5 rounded-lg"><div id="payInfo" class="bg-gray-100 p-3 rounded-xl text-xs"></div><select id="payMethod" class="w-full border p-2.5 rounded-lg text-sm"></select><button onclick="placeOrder()" class="w-full bg-black text-white py-3 rounded-xl font-bold">Place Order</button></div></div></div>
 
 <script>
-let tapCount=0;
-function tap(){
-  tapCount++;
-  if(tapCount>=3){
-    tapCount=0;
-    let p=prompt("Admin Password?");
-    if(p==="nasvara123"){
-      localStorage.setItem("admin","yes");
-      document.getElementById("admin").classList.remove("hidden");
-      alert("Admin Unlocked!");
-    } else alert("Wrong password!");
-  }
-  setTimeout(()=>tapCount=0,1500);
-}
-if(localStorage.getItem("admin")==="yes"){
-  document.getElementById("admin").classList.add("hidden");
-  setTimeout(()=>document.getElementById("admin").classList.remove("hidden"),500);
-}
-if(location.search.includes("admin=nasvara")){
-  localStorage.setItem("admin","yes");
-  document.getElementById("admin").classList.remove("hidden");
-}
-function logout(){ localStorage.removeItem("admin"); location.href="."; }
+const firebaseConfig = { apiKey: "AIzaSyCNUpsZ3KOAAdn3-CSQhS65gcKqDDxAjSs", authDomain: "mini-mall-94817.firebaseapp.com", projectId: "mini-mall-94817", storageBucket: "mini-mall-94817.firebasestorage.app", messagingSenderId: "638018323167", appId: "1:638018323167:web:df3ba18d8b78a592401f6a" };
+firebase.initializeApp(firebaseConfig); const db=firebase.firestore();
+let tapCount=0, cart=[], editId=null, isAdmin=false;
+let payment = JSON.parse(localStorage.getItem('pay')||'{"enableCOD":true,"enableUPI":false,"enableWA":true}');
+const statuses=["Placed","Packed","Shipped","Delivered","Cancelled"];
 
-let products=JSON.parse(localStorage.getItem("products")||"[]");
-let cart=[];
-function show(){
-  const div=document.getElementById("list");
-  if(products.length===0){
-    div.innerHTML="<div class='col-span-2 text-center py-20 text-gray-400'>No products<br><span class='text-xs'>Tap title 3x to add (or open ?admin=nasvara)</span></div>";
-    return;
-  }
-  div.innerHTML="";
-  products.forEach((p,i)=>{
-    div.innerHTML+=`<div class="bg-white p-3 rounded-2xl shadow"><div class="h-28 bg-gray-100 rounded-xl flex items-center justify-center text-3xl">🛒</div><div class="font-bold text-sm mt-2">${p.name}</div><div class="text-sm">₹${p.price}</div><button onclick="addToCart(${i})" class="w-full bg-black text-white py-2 rounded-lg mt-2 text-xs">Add to Cart</button></div>`;
-  });
+function tap(){ tapCount++; if(tapCount>=3){ tapCount=0; let p=prompt("Enter Admin Password"); if(p==="nasvara123"){ localStorage.setItem('isAdmin','yes'); location.reload(); } } setTimeout(()=>tapCount=0,1500); }
+function checkAdmin(){ if(localStorage.getItem('isAdmin')==='yes' || location.search.includes('admin=nasvara')){ localStorage.setItem('isAdmin','yes'); isAdmin=true; document.getElementById('adminPanel').classList.remove('hidden'); document.getElementById('upiId').value=payment.upi||""; document.getElementById('waNum').value=payment.wa||""; document.getElementById('enableCOD').checked=payment.enableCOD!==false; document.getElementById('enableUPI').checked=!!payment.enableUPI; document.getElementById('enableWA').checked=payment.enableWA!==false; } } checkAdmin();
+function logout(){ localStorage.removeItem('isAdmin'); location.href=location.pathname; }
+function tab(t){ ['products','orders','payment'].forEach(x=>{ document.getElementById('admin-'+x).classList.add('hidden'); document.getElementById('t-'+x).className='bg-gray-200 px-4 py-2 rounded-lg text-sm'; }); document.getElementById('admin-'+t).classList.remove('hidden'); document.getElementById('t-'+t).className='bg-black text-white px-4 py-2 rounded-lg text-sm'; if(t==='orders') loadOrders(); }
+function addVar(){ const d=document.createElement('div'); d.className='flex gap-2'; d.innerHTML=`<input placeholder="Label" class="v-label w-1/3 border p-2 rounded text-sm"><input placeholder="Price" type="number" class="v-price w-1/3 border p-2 rounded text-sm"><input placeholder="Stock" class="v-stock w-1/3 border p-2 rounded text-sm">`; document.getElementById('varList').appendChild(d); }
+
+function addProduct(){
+  const name=document.getElementById('pname').value.trim(), image=document.getElementById('pimage').value.trim();
+  const labels=document.querySelectorAll('.v-label'), prices=document.querySelectorAll('.v-price'), stocks=document.querySelectorAll('.v-stock');
+  let variants=[]; for(let i=0;i<labels.length;i++){ if(labels[i].value && prices[i].value) variants.push({label:labels[i].value, price:Number(prices[i].value), stock:Number(stocks[i].value||0)}); }
+  if(!name) return alert("Enter name");
+  if(variants.length===0) variants=[{label:"1pc",price:20,stock:100}];
+  const data={name,image,variants,createdAt:firebase.firestore.FieldValue.serverTimestamp()};
+  if(editId){ db.collection("products").doc(editId).update(data).then(()=>{ alert("Updated!"); editId=null; document.getElementById('addBtn').innerText="+ Add Product"; }); }
+  else db.collection("products").add(data).then(()=>alert("Added LIVE!"));
+  document.getElementById('pname').value=""; document.getElementById('pimage').value="";
 }
-show();
-function add(){
-  const n=document.getElementById("name").value;
-  const pr=document.getElementById("price").value;
-  if(!n||!pr) return alert("Enter name & price");
-  products.push({name:n,price:pr});
-  localStorage.setItem("products",JSON.stringify(products));
-  document.getElementById("name").value=""; document.getElementById("price").value="";
-  show(); alert("Added! Now Logout and see as customer");
+function savePay(){
+  payment={ enableCOD:document.getElementById('enableCOD').checked, enableUPI:document.getElementById('enableUPI').checked, upi:document.getElementById('upiId').value.trim(), enableWA:document.getElementById('enableWA').checked, wa:document.getElementById('waNum').value.trim() };
+  localStorage.setItem('pay',JSON.stringify(payment)); db.collection("settings").doc("payment").set(payment); alert("Payment settings saved!"); updatePayUI();
 }
-function addToCart(i){ cart.push(products[i]); document.getElementById("c").innerText=cart.length; render(); openCart(); }
-function render(){ let t=0; const d=document.getElementById("cartItems"); d.innerHTML=""; cart.forEach(c=>{ t+=Number(c.price); d.innerHTML+=`<div class="flex justify-between border-b py-2 text-sm"><span>${c.name}</span><span>₹${c.price}</span></div>`; }); if(t) d.innerHTML+=`<div class="flex justify-between font-bold mt-3"><span>Total</span><span>₹${t}</span></div>`; }
-function openCart(){ document.getElementById("cartBox").classList.toggle("hidden"); }
-function order(){ if(cart.length===0) return alert("Cart empty"); alert("Order placed! Total: ₹"+cart.reduce((a,b)=>a+Number(b.price),0)); cart=[]; document.getElementById("c").innerText=0; openCart(); }
-</script>
-</body>
-</html>
+function updatePayUI(){
+  let info=[]; if(payment.enableCOD) info.push("✓ COD Available"); if(payment.enableUPI && payment.upi) info.push("✓ UPI: "+payment.upi); if(payment.enableWA) info.push("✓ WhatsApp Alert");
+  document.getElementById('payInfo').innerHTML=info.join("<br>")||"No payment method";
+  const sel=document.getElementById('payMethod'); sel.innerHTML=""; if(payment.enableCOD) sel.innerHTML+=`<option value="COD">Cash on Delivery (COD)</option>`; if(payment.enableUPI) sel.innerHTML+=`<option value="UPI">Pay with UPI - ${payment.upi||''}</option>`; if(payment.enableWA) sel.innerHTML+=`<option value="WhatsApp">Order via WhatsApp</option>`;
+}
+db.collection("settings").doc("payment").onSnapshot(d=>{ if(d.exists){ payment=d.data(); localStorage.setItem('pay',JSON.stringify(payment)); updatePayUI(); } }); updatePayUI();
+
+function renderProducts(snap){
+  const con=document.getElementById('products'); con.innerHTML="";
+  if(snap.empty){ con.innerHTML="<div class='col-span-4 text-center py-24 text-gray-400'>No products available</div>"; return; }
+  snap.forEach(doc=>{
+    const p=doc.data(), id=doc.id;
+    con.innerHTML+=`<div class="bg-white rounded-2xl p-3 shadow"><img src="${p.image||'https://via.placeholder.com/300?text=No+Image'}" class="w-full h-32 object-cover rounded-xl mb-2"><h4 class="font-bold text-sm truncate">${p.name}</h4><select id="sel-${id}" class="w-full border text-xs p-2 rounded-lg mt-2 bg-white">${p.variants.map(v=>`<option value="${v.label}|${v.price}">${v.label} - ₹${v.price}</option>`).join('')}</select><button onclick="addToCart('${id}','${p.name.replace(/'/g,'')}',document.getElementById('sel-${id}').value)" class="w-full bg-black text-white text-xs py-2.5 rounded-lg mt-2">Add to Cart</button>${isAdmin?`<div class="flex gap-2 mt-2"><button onclick="editProd('${id}
