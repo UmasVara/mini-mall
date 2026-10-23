@@ -2,42 +2,77 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini Mall - Live</title>
+<title>Mini Mall LIVE</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body class="bg-gray-50">
-<div class="bg-white shadow-sm sticky top-0 z-10">
+<div class="bg-white shadow-sm sticky top-0 z-20">
   <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-    <!-- 3x TAP HERE FOR ADMIN - SECRET -->
-    <h1 id="shopTitle" class="text-2xl font-bold select-none">Mini Mall 🛒 LIVE</h1>
-    <button onclick="toggleCart()" class="bg-black text-white px-4 py-2 rounded-full text-sm">Cart (<span id="cartCount">0</span>)</button>
+    <h1 id="shopTitle" class="text-xl font-bold select-none">Mini Mall 🛒 LIVE</h1>
+    <div class="flex gap-2">
+      <button onclick="openTrack()" class="bg-gray-100 px-3 py-2 rounded-full text-xs font-semibold">Track Order</button>
+      <button onclick="toggleCart()" class="bg-black text-white px-4 py-2 rounded-full text-sm">Cart (<span id="cartCount">0</span>)</button>
+    </div>
   </div>
 </div>
 
-<div class="max-w-6xl mx-auto px-4 py-6 grid md:grid-cols-3 gap-6">
-  <!-- ADMIN - COMPLETELY HIDDEN -->
-  <div id="adminPanel" class="hidden md:col-span-1 bg-white p-5 rounded-2xl shadow-sm h-fit border-2 border-black">
-    <h2 class="font-bold text-lg mb-3">Admin Panel 🔒</h2>
-    <input id="pname" placeholder="Product Name" class="w-full border p-2.5 rounded-lg mb-2">
-    <input id="pprice" type="number" placeholder="Price ₹" class="w-full border p-2.5 rounded-lg mb-2">
-    <input id="pqty" type="number" placeholder="Quantity / Stock" class="w-full border p-2.5 rounded-lg mb-2">
-    <input id="pimage" placeholder="Image URL" class="w-full border p-2.5 rounded-lg mb-3">
-    <button onclick="addProduct()" class="w-full bg-black text-white py-3 rounded-xl font-semibold">+ Add LIVE</button>
-    <button onclick="logoutAdmin()" class="w-full mt-2 text-xs text-gray-500">Logout Admin</button>
+<div class="max-w-6xl mx-auto px-4 py-6">
+  <!-- ADMIN - SECRET 3x TAP -->
+  <div id="adminPanel" class="hidden bg-white p-5 rounded-2xl shadow-lg mb-6 border-2 border-black">
+    <div class="flex gap-2 mb-4 flex-wrap">
+      <button onclick="adminTab('products')" id="tab-products" class="bg-black text-white px-4 py-2 rounded-lg text-sm">Products</button>
+      <button onclick="adminTab('orders')" id="tab-orders" class="bg-gray-200 px-4 py-2 rounded-lg text-sm">Orders + Tracking</button>
+      <button onclick="adminTab('payment')" id="tab-payment" class="bg-gray-200 px-4 py-2 rounded-lg text-sm">Payment</button>
+      <button onclick="logoutAdmin()" class="ml-auto text-xs">Logout</button>
+    </div>
+
+    <div id="admin-products">
+      <input id="pname" placeholder="Product Name" class="w-full border p-2.5 rounded-lg mb-2">
+      <input id="pimage" placeholder="Image URL" class="w-full border p-2.5 rounded-lg mb-2">
+      <div id="variantsList" class="space-y-2 mb-2">
+        <div class="flex gap-2"><input placeholder="500g" class="variant-label w-1/3 border p-2 rounded text-sm"><input placeholder="Price" type="number" class="variant-price w-1/3 border p-2 rounded text-sm"><input placeholder="Stock" type="number" class="variant-stock w-1/3 border p-2 rounded text-sm"></div>
+        <div class="flex gap-2"><input placeholder="1kg" class="variant-label w-1/3 border p-2 rounded text-sm"><input placeholder="Price" type="number" class="variant-price w-1/3 border p-2 rounded text-sm"><input placeholder="Stock" type="number" class="variant-stock w-1/3 border p-2 rounded text-sm"></div>
+      </div>
+      <button onclick="addVariantRow()" class="text-xs text-blue-600 mb-3">+ Add variant</button>
+      <button onclick="addProduct()" class="w-full bg-black text-white py-3 rounded-xl">+ Add LIVE</button>
+    </div>
+
+    <div id="admin-orders" class="hidden"><div id="ordersList">Loading...</div></div>
+
+    <div id="admin-payment" class="hidden">
+      <input id="upiId" placeholder="UPI ID (you@paytm)" class="w-full border p-2.5 rounded-lg mb-2">
+      <input id="waNumber" placeholder="WhatsApp 91xxxxxxxxxx" class="w-full border p-2.5 rounded-lg mb-2">
+      <button onclick="savePayment()" class="w-full bg-green-600 text-white py-3 rounded-xl">Save Payment</button>
+    </div>
   </div>
 
-  <div id="productsWrap" class="md:col-span-3">
-    <div id="products" class="grid grid-cols-2 md:grid-cols-4 gap-4">Loading...</div>
+  <div id="products" class="grid grid-cols-2 md:grid-cols-4 gap-4">Loading...</div>
+</div>
+
+<!-- TRACKING MODAL FOR BUYER -->
+<div id="trackDrawer" class="fixed inset-0 bg-black/50 hidden z-30">
+  <div class="bg-white w-[95%] max-w-md mx-auto mt-20 p-6 rounded-2xl">
+    <div class="flex justify-between"><h3 class="font-bold text-lg">Track Your Order</h3><button onclick="openTrack()">✕</button></div>
+    <input id="trackPhone" placeholder="Enter Phone Number or Order ID" class="w-full border p-3 rounded-xl mt-4">
+    <button onclick="trackOrder()" class="w-full bg-black text-white py-3 rounded-xl mt-3">Track</button>
+    <div id="trackResult" class="mt-4"></div>
   </div>
 </div>
 
-<div id="cartDrawer" class="fixed inset-0 bg-black/40 hidden z-20">
-  <div class="bg-white w-80 ml-auto h-full p-5 flex flex-col">
-    <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-xl">Your Cart</h3><button onclick="toggleCart()">✕</button></div>
-    <div id="cartItems" class="flex-1 overflow-auto"></div>
-    <button class="bg-green-600 text-white py-3 rounded-xl mt-4">Order on WhatsApp</button>
+<!-- CART -->
+<div id="cartDrawer" class="fixed inset-0 bg-black/50 hidden z-30">
+  <div class="bg-white w-[90%] max-w-sm ml-auto h-full p-5 flex flex-col overflow-auto">
+    <div class="flex justify-between mb-4"><h3 class="font-bold text-xl">Checkout</h3><button onclick="toggleCart()">✕</button></div>
+    <div id="cartItems" class="flex-1"></div>
+    <div class="mt-4 border-t pt-4">
+      <input id="custName" placeholder="Your Name" class="w-full border p-2 rounded-lg mb-2">
+      <input id="custPhone" placeholder="Phone" class="w-full border p-2 rounded-lg mb-2">
+      <input id="custAddr" placeholder="Address" class="w-full border p-2 rounded-lg mb-2">
+      <div id="paymentInfo" class="bg-yellow-50 p-2 rounded text-xs mb-2"></div>
+      <button onclick="placeOrder()" class="w-full bg-black text-white py-3 rounded-xl">Place Order</button>
+    </div>
   </div>
 </div>
 
@@ -52,75 +87,45 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-let cart = []; let isAdmin = false;
-let tapCount = 0; let tapTimer = null;
+let cart=[]; let isAdmin=false; let tapCount=0; let tapTimer=null;
+let paymentSettings=JSON.parse(localStorage.getItem('paymentSettings')||'{}');
+const statuses = ["Placed","Packed","Shipped","Out for Delivery","Delivered"];
 
-// === SECRET 3-TAP LOGIC ON SHOP NAME ===
-document.getElementById('shopTitle').addEventListener('click', () => {
-  tapCount++;
-  if(tapTimer) clearTimeout(tapTimer);
-  tapTimer = setTimeout(()=>{ tapCount=0 }, 2000); // reset after 2 sec
-  
-  if(tapCount === 3){
-    tapCount = 0;
-    adminLogin();
-  }
+document.getElementById('shopTitle').addEventListener('click',()=>{
+  tapCount++; if(tapTimer) clearTimeout(tapTimer); tapTimer=setTimeout(()=>tapCount=0,2000);
+  if(tapCount===3){ tapCount=0; const p=prompt("Admin Password:"); if(p==="nasvara123"){ localStorage.setItem('isAdmin','true'); location.reload(); } }
 });
 
-function checkAdmin(){
-  if(localStorage.getItem('isAdmin') === 'true'){
-    isAdmin = true;
-    document.getElementById('adminPanel').classList.remove('hidden');
-    document.getElementById('productsWrap').className = "md:col-span-2";
-  }
-}
+function checkAdmin(){ if(localStorage.getItem('isAdmin')==='true'){ isAdmin=true; document.getElementById('adminPanel').classList.remove('hidden'); if(paymentSettings.upi) document.getElementById('upiId').value=paymentSettings.upi; if(paymentSettings.wa) document.getElementById('waNumber').value=paymentSettings.wa; } }
 checkAdmin();
-
-function adminLogin(){
-  const pass = prompt("Enter Admin Password:");
-  if(pass === "nasvara123"){
-    localStorage.setItem('isAdmin','true');
-    location.reload();
-  } else if(pass) alert("Wrong password!");
-}
 function logoutAdmin(){ localStorage.removeItem('isAdmin'); location.reload(); }
-
-function addProduct(){
-  if(!isAdmin) return;
-  const name = pname.value.trim(); const price = pprice.value; const qty = pqty.value || 1; const image = pimage.value.trim();
-  if(!name || !price) return alert("Enter name & price");
-  db.collection("products").add({name, price: Number(price), qty: Number(qty), image, createdAt: firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{pname.value='';pprice.value='';pqty.value='';pimage.value='';});
-}
+function adminTab(t){ ['products','orders','payment'].forEach(x=>{ document.getElementById('admin-'+x).classList.add('hidden'); document.getElementById('tab-'+x).className='bg-gray-200 px-4 py-2 rounded-lg text-sm'; }); document.getElementById('admin-'+t).classList.remove('hidden'); document.getElementById('tab-'+t).className='bg-black text-white px-4 py-2 rounded-lg text-sm'; if(t==='orders') loadOrders(); }
+function addVariantRow(){ const d=document.createElement('div'); d.className='flex gap-2'; d.innerHTML=`<input placeholder="Ex: 2kg" class="variant-label w-1/3 border p-2 rounded text-sm"><input placeholder="Price" type="number" class="variant-price w-1/3 border p-2 rounded text-sm"><input placeholder="Stock" type="number" class="variant-stock w-1/3 border p-2 rounded text-sm">`; variantsList.appendChild(d); }
+function addProduct(){ const name=pname.value.trim(); const image=pimage.value.trim(); const labels=document.querySelectorAll('.variant-label'); const prices=document.querySelectorAll('.variant-price'); const stocks=document.querySelectorAll('.variant-stock'); let variants=[]; for(let i=0;i<labels.length;i++){ if(labels[i].value && prices[i].value) variants.push({label:labels[i].value, price:Number(prices[i].value), stock:Number(stocks[i].value||0)}); } if(!name||!variants.length) return alert("Add name + variant"); db.collection("products").add({name,image,variants,createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{ alert("Live!"); pname.value=''; pimage.value=''; }); }
+function savePayment(){ paymentSettings={upi:upiId.value, wa:waNumber.value}; localStorage.setItem('paymentSettings',JSON.stringify(paymentSettings)); db.collection("settings").doc("payment").set(paymentSettings); alert("Saved!"); }
+db.collection("settings").doc("payment").onSnapshot(d=>{ if(d.exists) paymentSettings=d.data(); document.getElementById('paymentInfo').innerHTML=paymentSettings.upi?`Pay to: <b>${paymentSettings.upi}</b>`:'Cash on Delivery'; });
 
 db.collection("products").orderBy("createdAt","desc").onSnapshot(snap=>{
-  const con = document.getElementById('products'); con.innerHTML = "";
-  if(snap.empty){ con.innerHTML = "<p class='col-span-4 text-center text-gray-400 py-20'>No products yet.</p>"; return; }
-  snap.forEach(doc=>{
-    const p = doc.data(); const id = doc.id;
-    con.innerHTML += `
-      <div class="bg-white rounded-2xl p-3 shadow-sm">
-        <img src="${p.image || 'https://via.placeholder.com/300'}" class="w-full h-36 object-cover rounded-xl mb-3">
-        <h4 class="font-semibold text-sm">${p.name}</h4>
-        <div class="flex justify-between items-center mt-1">
-          <p class="font-bold">₹${p.price}</p>
-          <span class="text-xs ${p.qty>0?'bg-green-100 text-green-700':'bg-red-100 text-red-700'} px-2 py-1 rounded-full">${p.qty>0?p.qty+' left':'Out'}</span>
-        </div>
-        <button onclick="addToCart('${id}','${p.name.replace(/'/g,"")} ',${p.price})" class="w-full bg-black text-white text-xs py-2 rounded-lg mt-3">Add to Cart</button>
-        ${isAdmin?`<button onclick="deleteProduct('${id}')" class="w-full text-[10px] text-red-400 mt-2">Delete (Admin)</button>`:''}
-      </div>
-    `;
-  });
+  const con=document.getElementById('products'); con.innerHTML=""; if(snap.empty){ con.innerHTML="<p class='col-span-4 text-center py-20 text-gray-400'>No products. Tap 3x on title for admin</p>"; return; }
+  snap.forEach(doc=>{ const p=doc.data(); const id=doc.id; con.innerHTML+=`<div class="bg-white rounded-2xl p-3 shadow-sm"><img src="${p.image||'https://via.placeholder.com/300'}" class="w-full h-32 object-cover rounded-xl mb-2"><h4 class="font-semibold text-sm">${p.name}</h4><select id="sel-${id}" class="w-full border text-xs p-2 rounded-lg mt-2">${p.variants.map(v=>`<option value="${v.label}|${v.price}">${v.label} - ₹${v.price}</option>`).join('')}</select><button onclick="addToCart('${id}','${p.name}',document.getElementById('sel-${id}').value)" class="w-full bg-black text-white text-xs py-2 rounded-lg mt-2">Add to Cart</button></div>`; });
 });
 
-function addToCart(id,name,price){ cart.push({id,name,price}); renderCart(); }
-function renderCart(){
-  document.getElementById('cartCount').innerText = cart.length;
-  const c = document.getElementById('cartItems'); let total=0; c.innerHTML="";
-  cart.forEach(item=>{ total+=item.price; c.innerHTML+=`<div class="flex justify-between py-2 border-b text-sm"><span>${item.name}</span><span>₹${item.price}</span></div>`; });
-  if(cart.length) c.innerHTML+=`<div class="font-bold flex justify-between mt-3"><span>Total</span><span>₹${total}</span></div>`;
-}
+function addToCart(id,name,val){ const [label,price]=val.split('|'); cart.push({id,name:`${name} (${label})`,price:Number(price)}); renderCart(); }
+function renderCart(){ cartCount.innerText=cart.length; const c=document.getElementById('cartItems'); let total=0; c.innerHTML=""; cart.forEach(i=>{ total+=i.price; c.innerHTML+=`<div class="flex justify-between py-2 border-b text-sm"><span>${i.name}</span><span>₹${i.price}</span></div>`; }); if(cart.length) c.innerHTML+=`<div class="font-bold flex justify-between mt-3"><span>Total</span><span>₹${total}</span></div>`; }
 function toggleCart(){ document.getElementById('cartDrawer').classList.toggle('hidden'); }
-function deleteProduct(id){ if(isAdmin && confirm("Delete?")) db.collection("products").doc(id).delete(); }
-</script>
-</body>
-</html>
+function openTrack(){ document.getElementById('trackDrawer').classList.toggle('hidden'); }
+
+function placeOrder(){
+  const name=custName.value; const phone=custPhone.value; const addr=custAddr.value;
+  if(!name||!phone) return alert("Name & phone needed");
+  let total=0; cart.forEach(i=>total+=i.price);
+  const orderId = "MM"+Math.floor(100000+Math.random()*900000);
+  db.collection("orders").doc(orderId).set({orderId,customerName:name,customerPhone:phone,address:addr,items:cart,total,status:"Placed",createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{
+    alert(`Order Placed! Your Tracking ID: ${orderId} - Save it!`);
+    document.getElementById('trackPhone').value=orderId; openTrack(); trackOrder();
+    cart=[]; renderCart(); toggleCart();
+  });
+}
+
+function loadOrders(){
+  db.collection("orders").order
