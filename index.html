@@ -1,46 +1,92 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mini Mall LIVE</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body class="bg-gray-50">
-<div class="bg-white shadow-sm sticky top-0 z-20">
-  <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-    <h1 id="shopTitle" class="text-xl font-bold select-none cursor-pointer">Mini Mall 🛒 LIVE</h1>
-    <div class="flex gap-2">
-      <button onclick="openTrack()" class="bg-gray-100 px-3 py-2 rounded-full text-xs font-semibold">Track Order</button>
-      <button onclick="toggleCart()" class="bg-black text-white px-4 py-2 rounded-full text-sm">Cart (<span id="cartCount">0</span>)</button>
-    </div>
+
+<div class="bg-white p-4 flex justify-between shadow sticky top-0 z-50">
+  <h1 id="shopTitle" onclick="tap()" style="font-weight:bold;font-size:20px;cursor:pointer;user-select:none;">Mini Mall 🛒 LIVE</h1>
+  <div class="flex gap-2">
+    <button onclick="alert('Track: Coming soon - add orders first')" class="bg-gray-200 px-3 py-2 rounded-full text-xs">Track Order</button>
+    <button onclick="openCart()" class="bg-black text-white px-4 py-2 rounded-full text-sm">Cart (<span id="c">0</span>)</button>
   </div>
 </div>
 
-<div class="max-w-6xl mx-auto px-4 py-6">
-  <!-- ADMIN - SECRET ONLY 3x TAP ON TITLE, HIDDEN FOR CUSTOMERS -->
-  <div id="adminPanel" class="hidden bg-white p-5 rounded-2xl shadow-lg mb-6 border-2 border-black">
-    <div class="flex gap-2 mb-4 flex-wrap">
-      <button onclick="adminTab('products')" id="tab-products" class="bg-black text-white px-4 py-2 rounded-lg text-sm">Products</button>
-      <button onclick="adminTab('orders')" id="tab-orders" class="bg-gray-200 px-4 py-2 rounded-lg text-sm">Orders + Tracking</button>
-      <button onclick="adminTab('payment')" id="tab-payment" class="bg-gray-200 px-4 py-2 rounded-lg text-sm">Payment</button>
-      <button onclick="logoutAdmin()" class="ml-auto text-xs text-red-500 font-semibold">Logout</button>
-    </div>
+<div class="p-4">
+  <div id="admin" class="hidden bg-white p-4 rounded-2xl shadow mb-4 border-2 border-black">
+    <h3 class="font-bold mb-2">ADMIN PANEL (Only you see)</h3>
+    <input id="name" placeholder="Product Name ex: Rice" class="w-full border p-2 rounded mb-2">
+    <input id="price" placeholder="Price ex: 80" type="number" class="w-full border p-2 rounded mb-2">
+    <button onclick="add()" class="w-full bg-black text-white py-3 rounded-xl">+ Add Product</button>
+    <button onclick="logout()" class="w-full text-red-500 text-xs mt-3">Logout Admin</button>
+  </div>
 
-    <div id="admin-products">
-      <h3 class="font-bold mb-2 text-sm">Add Product with 500g / 1kg options</h3>
-      <input id="pname" placeholder="Product Name (ex: Basmati Rice)" class="w-full border p-2.5 rounded-lg mb-2">
-      <input id="pimage" placeholder="Image URL (paste link)" class="w-full border p-2.5 rounded-lg mb-2">
-      <div id="variantsList" class="space-y-2 mb-2">
-        <div class="flex gap-2"><input placeholder="500g" class="variant-label w-1/3 border p-2 rounded-lg text-sm"><input placeholder="Price ₹" type="number" class="variant-price w-1/3 border p-2 rounded-lg text-sm"><input placeholder="Stock" type="number" class="variant-stock w-1/3 border p-2 rounded-lg text-sm"></div>
-        <div class="flex gap-2"><input placeholder="1kg" class="variant-label w-1/3 border p-2 rounded-lg text-sm"><input placeholder="Price ₹" type="number" class="variant-price w-1/3 border p-2 rounded-lg text-sm"><input placeholder="Stock" type="number" class="variant-stock w-1/3 border p-2 rounded-lg text-sm"></div>
-      </div>
-      <button onclick="addVariantRow()" class="text-xs text-blue-600 mb-3">+ Add more variant</button>
-      <button onclick="addProduct()" class="w-full bg-black text-white py-3 rounded-xl font-semibold">+ Add LIVE</button>
-    </div>
+  <div id="list" class="grid grid-cols-2 gap-4"></div>
+</div>
 
-    <div id="admin-orders" class="hidden"><div id="ordersList" class="space-y-3">Loading...</div></div>
+<div id="cartBox" class="hidden fixed inset-0 bg-black/50 z-50">
+  <div class="bg-white w-[90%] max-w-sm ml-auto h-full p-5">
+    <div class="flex justify-between"><b>Your Cart</b><button onclick="openCart()">X</button></div>
+    <div id="cartItems" class="mt-4"></div>
+    <button onclick="order()" class="w-full bg-black text-white py-3 rounded-xl mt-6">Place Order (WhatsApp)</button>
+  </div>
+</div>
 
-    <div id="admin-payment" class="hidden">
-      <h3 class="font-bold
+<script>
+let tapCount=0;
+function tap(){
+  tapCount++;
+  if(tapCount>=3){
+    tapCount=0;
+    let p=prompt("Admin Password?");
+    if(p==="nasvara123"){
+      localStorage.setItem("admin","yes");
+      document.getElementById("admin").classList.remove("hidden");
+      alert("Admin Unlocked!");
+    } else alert("Wrong password!");
+  }
+  setTimeout(()=>tapCount=0,1500);
+}
+if(localStorage.getItem("admin")==="yes"){
+  document.getElementById("admin").classList.add("hidden");
+  setTimeout(()=>document.getElementById("admin").classList.remove("hidden"),500);
+}
+if(location.search.includes("admin=nasvara")){
+  localStorage.setItem("admin","yes");
+  document.getElementById("admin").classList.remove("hidden");
+}
+function logout(){ localStorage.removeItem("admin"); location.href="."; }
+
+let products=JSON.parse(localStorage.getItem("products")||"[]");
+let cart=[];
+function show(){
+  const div=document.getElementById("list");
+  if(products.length===0){
+    div.innerHTML="<div class='col-span-2 text-center py-20 text-gray-400'>No products<br><span class='text-xs'>Tap title 3x to add (or open ?admin=nasvara)</span></div>";
+    return;
+  }
+  div.innerHTML="";
+  products.forEach((p,i)=>{
+    div.innerHTML+=`<div class="bg-white p-3 rounded-2xl shadow"><div class="h-28 bg-gray-100 rounded-xl flex items-center justify-center text-3xl">🛒</div><div class="font-bold text-sm mt-2">${p.name}</div><div class="text-sm">₹${p.price}</div><button onclick="addToCart(${i})" class="w-full bg-black text-white py-2 rounded-lg mt-2 text-xs">Add to Cart</button></div>`;
+  });
+}
+show();
+function add(){
+  const n=document.getElementById("name").value;
+  const pr=document.getElementById("price").value;
+  if(!n||!pr) return alert("Enter name & price");
+  products.push({name:n,price:pr});
+  localStorage.setItem("products",JSON.stringify(products));
+  document.getElementById("name").value=""; document.getElementById("price").value="";
+  show(); alert("Added! Now Logout and see as customer");
+}
+function addToCart(i){ cart.push(products[i]); document.getElementById("c").innerText=cart.length; render(); openCart(); }
+function render(){ let t=0; const d=document.getElementById("cartItems"); d.innerHTML=""; cart.forEach(c=>{ t+=Number(c.price); d.innerHTML+=`<div class="flex justify-between border-b py-2 text-sm"><span>${c.name}</span><span>₹${c.price}</span></div>`; }); if(t) d.innerHTML+=`<div class="flex justify-between font-bold mt-3"><span>Total</span><span>₹${t}</span></div>`; }
+function openCart(){ document.getElementById("cartBox").classList.toggle("hidden"); }
+function order(){ if(cart.length===0) return alert("Cart empty"); alert("Order placed! Total: ₹"+cart.reduce((a,b)=>a+Number(b.price),0)); cart=[]; document.getElementById("c").innerText=0; openCart(); }
+</script>
+</body>
+</html>
